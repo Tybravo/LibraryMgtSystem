@@ -11,6 +11,8 @@ import com.app.librarymgtsystem.exceptions.NotInSessionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class BookServiceImpl implements BookService {
 
@@ -21,23 +23,17 @@ public class BookServiceImpl implements BookService {
 
 
 
-//    @Override
-//    public boolean findMemberSession(Boolean sessionStatus) {
-//        return memberRepository.findBySessionStatus(true).isSessionStatus();
-//    }
-@Override
-public boolean findMemberSession(Boolean sessionStatus) {
+    @Override
+    public boolean findMemberSession(Boolean sessionStatus) {
     Member member = memberRepository.findBySessionStatus(true);
     if (member == null) {
         throw new NotInSessionException("Not in session or currently logged out!");
     }
     return member.isSessionStatus();
-}
-
-
+    }
 
     @Override
-    public Boolean findMemberAccessLevel(int accessLevel) {
+    public boolean findMemberAccessLevel(int accessLevel) {
         return memberRepository.findByAccessLevel(accessLevel) != null;
     }
 
@@ -50,14 +46,10 @@ public boolean findMemberSession(Boolean sessionStatus) {
         }
     }
 
-
     @Override
     public AddBookRequest addBook(AddBookRequest addBookRequest) {
-        if(findMemberSession(null)){
-            throw new NotInSessionException("Not in session, you are currently logged out!");
-            }
         if(findMemberSession(true) && !findMemberAccessLevel(20)){
-            throw new NotEligiblePageException("Not eligible to access this page!");
+            throw new NotEligiblePageException("You're not eligible to access this page");
         }
         if(findMemberSession(true) && findMemberAccessLevel(20)){
             String memberEmail = getMemberEmail();
@@ -68,13 +60,16 @@ public boolean findMemberSession(Boolean sessionStatus) {
                 book.setIsbn(addBookRequest.getBookIsbn());
                 book.setDescription(addBookRequest.getBookDescription());
                 bookRepository.save(book);
+                addBookRequest.setId(book.getId());
 
                 AddBookResponse addBookResponse = new AddBookResponse();
                 addBookResponse.setAddBookMsg("Book added successfully");
+                addBookResponse.setId(book.getId());
                 addBookResponse.setBookTitle(book.getTitle());
                 addBookResponse.setBookAuthor(book.getAuthor());
                 addBookResponse.setBookIsbn(book.getIsbn());
                 addBookResponse.setBookDescription(book.getDescription());
+                addBookResponse.setCreationDate(book.getCreationDate());
             } else {
                 throw new NotInSessionException("Membership account not found!");
             }
@@ -82,7 +77,16 @@ public boolean findMemberSession(Boolean sessionStatus) {
         return addBookRequest;
     }
 
-
+    @Override
+    public Optional<AddBookRequest> findBookId(String findBook) {
+        Optional<Book> getBook = bookRepository.findById(findBook);
+        return getBook.map(book -> {
+            AddBookRequest addBookRequest = new AddBookRequest();
+            addBookRequest.setId(book.getId());
+            addBookRequest.setBookTitle(book.getTitle());
+            return addBookRequest;
+        });
+    }
 
 
     }

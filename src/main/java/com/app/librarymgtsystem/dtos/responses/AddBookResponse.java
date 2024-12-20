@@ -2,6 +2,7 @@ package com.app.librarymgtsystem.dtos.responses;
 
 import lombok.Data;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class AddBookResponse {
@@ -12,5 +13,5 @@ public class AddBookResponse {
     private String bookDescription;
 
     private String addBookMsg;
-    private LocalDate rentalDate;
+    private LocalDateTime creationDate = LocalDateTime.now();
 }

@@ -18,7 +18,11 @@ public class Shelve {
     private String memberId;
     private ShelveType category;
     private String genre;
+    private String addShelveMsg;
+    private boolean available = true;
+    private boolean borrowed = false;
     private LocalDateTime creationDate = LocalDateTime.now();
+
     private List<Book> books = new ArrayList<>();
     private List<Member> members = new ArrayList<>();
     @DBRef
