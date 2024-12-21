@@ -16,6 +16,7 @@ public class Shelve {
     private String id;
     private String bookId;
     private String memberId;
+    //@Enumerated(EnumType.STRING)
     private ShelveType category;
     private String genre;
     private String addShelveMsg;

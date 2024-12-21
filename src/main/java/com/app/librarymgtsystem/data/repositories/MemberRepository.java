@@ -10,10 +10,8 @@ import java.util.Optional;
 public interface MemberRepository extends MongoRepository<Member, String> {
     Member findByEmail(String emailAddy);
     Member findByAccessLevel(int accessLevel);
-    //Boolean findBySessionStatus(Boolean sessionStatus);
-    Optional<Member> findBySessionStatusTrue();
-
     Member findBySessionStatus(Boolean sessionStatus);
+    Optional<Member> findBySessionStatusTrue();
 
 
     //Optional<Member> findByEmail(String email);

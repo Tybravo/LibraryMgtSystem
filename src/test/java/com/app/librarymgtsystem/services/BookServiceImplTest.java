@@ -1,14 +1,16 @@
 package com.app.librarymgtsystem.services;
 
-import com.app.librarymgtsystem.data.models.Book;
 import com.app.librarymgtsystem.data.models.Member;
+import com.app.librarymgtsystem.data.models.ShelveType;
 import com.app.librarymgtsystem.data.repositories.BookRepository;
 import com.app.librarymgtsystem.data.repositories.MemberRepository;
 import com.app.librarymgtsystem.dtos.requests.AddBookRequest;
 import com.app.librarymgtsystem.dtos.requests.AddMemberRequest;
+import com.app.librarymgtsystem.dtos.requests.AddShelveRequest;
 import com.app.librarymgtsystem.dtos.requests.LoginRequest;
 import com.app.librarymgtsystem.dtos.responses.AddBookResponse;
 import com.app.librarymgtsystem.dtos.responses.AddMemberResponse;
+import com.app.librarymgtsystem.dtos.responses.AddShelveResponse;
 import com.app.librarymgtsystem.exceptions.NotEligiblePageException;
 import com.app.librarymgtsystem.exceptions.NotInSessionException;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,7 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+
 
 @SpringBootTest
 class BookServiceImplTest {
@@ -33,11 +35,11 @@ class BookServiceImplTest {
         @Autowired
         BookService bookService;
 
-        @BeforeEach
+    @BeforeEach
         void eraseAll() {
             memberRepository.deleteAll();
             bookRepository.deleteAll();
-        }
+            }
 
 
         @Test
@@ -50,7 +52,7 @@ class BookServiceImplTest {
         }
 
         @Test
-        public void test_That_Librarian_Not_In_Session_To_Add_Book() {
+        public void test_That_Librarian_Not_In_Session_Cannot_Add_Book() {
             AddMemberRequest addMemberRequest = new AddMemberRequest();
             addMemberRequest.setFullName("Ade Bravo");
             addMemberRequest.setEmail("twinebravo@gmail.com");
@@ -183,7 +185,7 @@ class BookServiceImplTest {
         }
 
     @Test
-    public void test_That_Book_Id_And_Category_Can_Be_Saved_In_Shelve() {
+    public void test_That_Book_Id_And_FICTION_Category_Can_Be_Saved_In_Shelve() {
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -224,16 +226,15 @@ class BookServiceImplTest {
         assertTrue(findBookRequest.isPresent(), "Book should be found");
         assertEquals(savedBookRequest.getId(), findBookRequest.get().getId());
 
-//        addShelveRequest addMemberRequest = new AddMemberRequest();
-//        addMemberRequest.setFullName("Ade Bravo");
-//        addMemberRequest.setEmail("twinebravo@gmail.com");
-//        addMemberRequest.setPassword("tybravo");
-//        addMemberRequest.setPhoneNumber("07032819318");
-//        addMemberRequest.setAddress("No. 34, Sabo, Yaba, Lagos.");
-//        addMemberRequest.setAccessLevel(10);
-//        addMemberRequest.setSessionStatus(false);
-//        AddMemberResponse response = memberService.registerMember(addMemberRequest);
-//        assertEquals("Registration successful", response.getRegMsg());
+        AddShelveRequest addShelveRequest = new AddShelveRequest();
+        addShelveRequest.setCategory(ShelveType.FICTION);
+        addShelveRequest.setBookId(savedBookRequest.getId());
+        addShelveRequest.setGenre("Genre One");
+        addShelveRequest.setAvailable(true);
+        addShelveRequest.setBorrowed(false);
+        AddShelveResponse shelveResponse = bookService.addShelveBookId(addShelveRequest);
+        assertEquals("Book added to shelve successfully", shelveResponse.getAddShelveMsg());
+
 
     }
 

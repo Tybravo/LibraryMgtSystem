@@ -2,10 +2,14 @@ package com.app.librarymgtsystem.services;
 
 import com.app.librarymgtsystem.data.models.Book;
 import com.app.librarymgtsystem.data.models.Member;
+import com.app.librarymgtsystem.data.models.Shelve;
 import com.app.librarymgtsystem.data.repositories.BookRepository;
 import com.app.librarymgtsystem.data.repositories.MemberRepository;
+import com.app.librarymgtsystem.data.repositories.ShelveRepository;
 import com.app.librarymgtsystem.dtos.requests.AddBookRequest;
+import com.app.librarymgtsystem.dtos.requests.AddShelveRequest;
 import com.app.librarymgtsystem.dtos.responses.AddBookResponse;
+import com.app.librarymgtsystem.dtos.responses.AddShelveResponse;
 import com.app.librarymgtsystem.exceptions.NotEligiblePageException;
 import com.app.librarymgtsystem.exceptions.NotInSessionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +24,8 @@ public class BookServiceImpl implements BookService {
     private BookRepository bookRepository;
 @Autowired
     private MemberRepository memberRepository;
-
+    @Autowired
+    private ShelveRepository shelveRepository;
 
 
     @Override
@@ -88,6 +93,21 @@ public class BookServiceImpl implements BookService {
         });
     }
 
+    @Override
+    public AddShelveResponse addShelveBookId(AddShelveRequest addShelveRequest) {
+        Shelve shelve = new Shelve();
+        shelve.setCategory(addShelveRequest.getCategory());
+        shelve.setBookId(addShelveRequest.getBookId());
+        shelve.setGenre(addShelveRequest.getGenre());
+        shelve.setAvailable(true);
+        shelve.setBorrowed(false);
+        shelveRepository.save(shelve);
 
+        AddShelveResponse addShelveResponse = new AddShelveResponse();
+        addShelveResponse.setAddShelveMsg("Book added to shelve successfully");
+        return addShelveResponse;
     }
+
+
+}
 
