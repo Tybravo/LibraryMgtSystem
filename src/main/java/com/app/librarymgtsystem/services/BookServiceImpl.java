@@ -10,6 +10,8 @@ import com.app.librarymgtsystem.dtos.requests.AddBookRequest;
 import com.app.librarymgtsystem.dtos.requests.AddShelveRequest;
 import com.app.librarymgtsystem.dtos.responses.AddBookResponse;
 import com.app.librarymgtsystem.dtos.responses.AddShelveResponse;
+import com.app.librarymgtsystem.exceptions.BookCannotBeEmptyException;
+import com.app.librarymgtsystem.exceptions.BookExistException;
 import com.app.librarymgtsystem.exceptions.NotEligiblePageException;
 import com.app.librarymgtsystem.exceptions.NotInSessionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +26,7 @@ public class BookServiceImpl implements BookService {
     private BookRepository bookRepository;
 @Autowired
     private MemberRepository memberRepository;
-    @Autowired
+@Autowired
     private ShelveRepository shelveRepository;
 
 
@@ -37,11 +39,6 @@ public class BookServiceImpl implements BookService {
     return member.isSessionStatus();
     }
 
-    @Override
-    public boolean findMemberAccessLevel(int accessLevel) {
-        return memberRepository.findByAccessLevel(accessLevel) != null;
-    }
-
     public String getMemberEmail() {
         Member currentMember = memberRepository.findBySessionStatus(true);
         if (currentMember != null) {
@@ -52,12 +49,72 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public AddBookRequest addBook(AddBookRequest addBookRequest) {
+    public boolean findMemberAccessLevel(int accessLevel) {
+        return memberRepository.findByAccessLevel(accessLevel) != null;
+    }
+
+    @Override
+    public Book findBookByTitle(String title) {
+        return bookRepository.findByTitle(title);
+    }
+
+    @Override
+    public Book findBookByAuthor(String author) {
+        return bookRepository.findByAuthor(author);
+    }
+
+    @Override
+    public Book findBookByIsbn(String isbn) {
+        return bookRepository.findByIsbn(isbn);
+    }
+
+    @Override
+    public void bookCannotBeEmpty(AddBookRequest addEmptyBook) {
+        if(addEmptyBook.getBookTitle() == null || addEmptyBook.getBookTitle().isEmpty() ||
+                addEmptyBook.getBookAuthor() == null || addEmptyBook.getBookAuthor().isEmpty() ||
+                    addEmptyBook.getBookIsbn() == null || addEmptyBook.getBookIsbn().isEmpty() ||
+                        addEmptyBook.getBookDescription() == null || addEmptyBook.getBookDescription().isEmpty()){
+                            throw new BookCannotBeEmptyException("Book detail cannot be empty!");
+        }
+    }
+
+    @Override
+    public boolean bookAlreadyExist(AddBookRequest addBookRequest) {
+        Book pullBook = findBookByTitle(addBookRequest.getBookTitle());
+        Book pullAuthor = findBookByAuthor(addBookRequest.getBookAuthor());
+        if( pullBook != null && pullBook.getTitle().equals(addBookRequest.getBookTitle()) &&
+                pullAuthor != null && pullAuthor.getAuthor().equals(addBookRequest.getBookAuthor())){
+            throw new BookExistException("Book already exist! Adjust title or author");
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isbnAlreadyExist(AddBookRequest addBookRequest) {
+        Book pullIsbn = findBookByIsbn(addBookRequest.getBookIsbn());
+        if(pullIsbn != null && pullIsbn.getIsbn().equals(addBookRequest.getBookIsbn())){
+            throw new BookExistException("ISBN already exist!");
+        }
+        return false;
+    }
+
+
+    @Override
+    public AddBookResponse addBook(AddBookRequest addBookRequest) {
+        AddBookResponse addBookResponse = new AddBookResponse();
         if(findMemberSession(true) && !findMemberAccessLevel(20)){
             throw new NotEligiblePageException("You're not eligible to access this page");
         }
         if(findMemberSession(true) && findMemberAccessLevel(20)){
             String memberEmail = getMemberEmail();
+            bookCannotBeEmpty(addBookRequest);
+
+            if(bookAlreadyExist(addBookRequest)) {
+                throw new BookExistException("Book already exist! Adjust title or author");
+            }
+                if(isbnAlreadyExist(addBookRequest)) {
+                    throw new BookExistException("ISBN already exist");
+                }
             if (memberEmail != null) {
                 Book book = new Book();
                 book.setTitle(addBookRequest.getBookTitle());
@@ -67,7 +124,6 @@ public class BookServiceImpl implements BookService {
                 bookRepository.save(book);
                 addBookRequest.setId(book.getId());
 
-                AddBookResponse addBookResponse = new AddBookResponse();
                 addBookResponse.setAddBookMsg("Book added successfully");
                 addBookResponse.setId(book.getId());
                 addBookResponse.setBookTitle(book.getTitle());
@@ -75,11 +131,9 @@ public class BookServiceImpl implements BookService {
                 addBookResponse.setBookIsbn(book.getIsbn());
                 addBookResponse.setBookDescription(book.getDescription());
                 addBookResponse.setCreationDate(book.getCreationDate());
-            } else {
-                throw new NotInSessionException("Membership account not found!");
             }
         }
-        return addBookRequest;
+        return addBookResponse;
     }
 
     @Override
@@ -94,7 +148,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public AddShelveResponse addShelveBookId(AddShelveRequest addShelveRequest) {
+    public AddShelveResponse addShelveWithBookId(AddShelveRequest addShelveRequest) {
         Shelve shelve = new Shelve();
         shelve.setCategory(addShelveRequest.getCategory());
         shelve.setBookId(addShelveRequest.getBookId());
@@ -107,6 +161,7 @@ public class BookServiceImpl implements BookService {
         addShelveResponse.setAddShelveMsg("Book added to shelve successfully");
         return addShelveResponse;
     }
+
 
 
 }

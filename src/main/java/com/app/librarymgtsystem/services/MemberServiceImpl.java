@@ -18,6 +18,7 @@ public class MemberServiceImpl implements MemberService {
     @Autowired
     MemberRepository memberRepository;
 
+
     @Override
     public Member findMemberByEmail(String emailAddy) {
         return memberRepository.findByEmail(emailAddy);
