@@ -106,8 +106,6 @@ public class BookServiceImpl implements BookService {
             throw new NotEligiblePageException("You're not eligible to access this page");
         }
         if(findMemberSession(true) && findMemberAccessLevel(20)){
-            String memberEmail = getMemberEmail();
-            bookCannotBeEmpty(addBookRequest);
 
             if(bookAlreadyExist(addBookRequest)) {
                 throw new BookExistException("Book already exist! Adjust title or author");
@@ -115,6 +113,8 @@ public class BookServiceImpl implements BookService {
                 if(isbnAlreadyExist(addBookRequest)) {
                     throw new BookExistException("ISBN already exist");
                 }
+            String memberEmail = getMemberEmail();
+            bookCannotBeEmpty(addBookRequest);
             if (memberEmail != null) {
                 Book book = new Book();
                 book.setTitle(addBookRequest.getBookTitle());

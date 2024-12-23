@@ -24,50 +24,50 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-mongodb -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-mongodb</artifactId>
-            <version>3.3.5</version>
-        </dependency>
+     <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-mongodb -->
+     <dependency>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-data-mongodb</artifactId>
+         <version>3.3.5</version>
+     </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-web -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-            <version>3.3.5</version>
-        </dependency>
+     <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-web -->
+     <dependency>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-web</artifactId>
+         <version>3.3.5</version>
+     </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-test -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <version>3.3.5</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!--        <dependency>-->
-<!--            <groupId>org.junit.jupiter</groupId>-->
-<!--            <artifactId>junit-jupiter-api</artifactId>-->
-<!--            <version>5.11.3</version>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
+     <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-test -->
+     <dependency>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-test</artifactId>
+         <version>3.3.5</version>
+         <scope>test</scope>
+     </dependency>
 
 
-    </dependencies>
+
+<!--     <dependency>-->
+<!--         <groupId>ch.qos.logback</groupId>-->
+<!--         <artifactId>logback-core</artifactId>-->
+<!--         <version>1.5.13</version>-->
+<!--     </dependency>-->
+
+<!--     <dependency>-->
+<!--         <groupId>org.springframework</groupId>-->
+<!--         <artifactId>spring-webmvc</artifactId>-->
+<!--         <version>6.2.1</version>-->
+<!--     </dependency>-->
+
+<!--     <dependency>-->
+<!--         <groupId>org.xmlunit</groupId>-->
+<!--         <artifactId>xmlunit-core</artifactId>-->
+<!--         <version>2.10.0</version>-->
+<!--     </dependency>-->
 
 
-<!--    <build>-->
-<!--        <plugins>-->
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-compiler-plugin</artifactId>-->
-<!--                <configuration>-->
-<!--                    <source>9</source>-->
-<!--                    <target>9</target>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
-<!--        </plugins>-->
-<!--    </build>-->
+ </dependencies>
+
 
 </project>
