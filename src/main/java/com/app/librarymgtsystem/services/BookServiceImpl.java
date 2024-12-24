@@ -3,6 +3,7 @@ package com.app.librarymgtsystem.services;
 import com.app.librarymgtsystem.data.models.Book;
 import com.app.librarymgtsystem.data.models.Member;
 import com.app.librarymgtsystem.data.models.Shelve;
+import com.app.librarymgtsystem.data.models.ShelveType;
 import com.app.librarymgtsystem.data.repositories.BookRepository;
 import com.app.librarymgtsystem.data.repositories.MemberRepository;
 import com.app.librarymgtsystem.data.repositories.ShelveRepository;
@@ -139,12 +140,14 @@ public class BookServiceImpl implements BookService {
     @Override
     public Optional<AddBookRequest> findBookId(String findBook) {
         Optional<Book> getBook = bookRepository.findById(findBook);
-        return getBook.map(book -> {
+        if (getBook.isPresent()) {
+            Book book = getBook.get();
             AddBookRequest addBookRequest = new AddBookRequest();
             addBookRequest.setId(book.getId());
             addBookRequest.setBookTitle(book.getTitle());
-            return addBookRequest;
-        });
+            return Optional.of(addBookRequest);
+        }
+        return Optional.empty();
     }
 
     @Override
@@ -160,6 +163,12 @@ public class BookServiceImpl implements BookService {
         AddShelveResponse addShelveResponse = new AddShelveResponse();
         addShelveResponse.setAddShelveMsg("Book added to shelve successfully");
         return addShelveResponse;
+    }
+
+    @Override
+    public Shelve findShelveByCategory(ShelveType category) {
+
+        return null;
     }
 
 

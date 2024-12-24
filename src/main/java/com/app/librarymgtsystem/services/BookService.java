@@ -1,6 +1,8 @@
 package com.app.librarymgtsystem.services;
 
 import com.app.librarymgtsystem.data.models.Book;
+import com.app.librarymgtsystem.data.models.Shelve;
+import com.app.librarymgtsystem.data.models.ShelveType;
 import com.app.librarymgtsystem.dtos.requests.AddBookRequest;
 import com.app.librarymgtsystem.dtos.requests.AddShelveRequest;
 import com.app.librarymgtsystem.dtos.responses.AddBookResponse;
@@ -32,6 +34,8 @@ public interface BookService {
     Book findBookByIsbn(String isbn);
 
     void bookCannotBeEmpty(AddBookRequest addEmptyBook);
+
+    Shelve findShelveByCategory(ShelveType category);
 
 }
 
