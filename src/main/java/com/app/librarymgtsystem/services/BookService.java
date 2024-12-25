@@ -3,8 +3,11 @@ package com.app.librarymgtsystem.services;
 import com.app.librarymgtsystem.data.models.Book;
 import com.app.librarymgtsystem.data.models.Shelve;
 import com.app.librarymgtsystem.data.models.ShelveType;
+import com.app.librarymgtsystem.dtos.responses.ViewBookResponse;
 import com.app.librarymgtsystem.dtos.requests.AddBookRequest;
 import com.app.librarymgtsystem.dtos.requests.AddShelveRequest;
+import com.app.librarymgtsystem.dtos.requests.UpdateBookRequest;
+import com.app.librarymgtsystem.dtos.responses.UpdateBookResponse;
 import com.app.librarymgtsystem.dtos.responses.AddBookResponse;
 import com.app.librarymgtsystem.dtos.responses.AddShelveResponse;
 
@@ -19,7 +22,7 @@ public interface BookService {
 
     String getMemberEmail();
 
-    Optional<AddBookRequest> findBookId(String findBook);
+    Optional<AddBookRequest> findBookById(String findBook);
 
     AddShelveResponse addShelveWithBookId(AddShelveRequest addShelveRequest);
 
@@ -35,7 +38,12 @@ public interface BookService {
 
     void bookCannotBeEmpty(AddBookRequest addEmptyBook);
 
+    UpdateBookResponse updateBookByTitle(UpdateBookRequest updateBookRequest);
+
+    ViewBookResponse viewBookByAll();
+
     Shelve findShelveByCategory(ShelveType category);
+
 
 }
 

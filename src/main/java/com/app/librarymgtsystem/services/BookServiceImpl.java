@@ -9,12 +9,12 @@ import com.app.librarymgtsystem.data.repositories.MemberRepository;
 import com.app.librarymgtsystem.data.repositories.ShelveRepository;
 import com.app.librarymgtsystem.dtos.requests.AddBookRequest;
 import com.app.librarymgtsystem.dtos.requests.AddShelveRequest;
+import com.app.librarymgtsystem.dtos.requests.UpdateBookRequest;
+import com.app.librarymgtsystem.dtos.responses.UpdateBookResponse;
 import com.app.librarymgtsystem.dtos.responses.AddBookResponse;
 import com.app.librarymgtsystem.dtos.responses.AddShelveResponse;
-import com.app.librarymgtsystem.exceptions.BookCannotBeEmptyException;
-import com.app.librarymgtsystem.exceptions.BookExistException;
-import com.app.librarymgtsystem.exceptions.NotEligiblePageException;
-import com.app.librarymgtsystem.exceptions.NotInSessionException;
+import com.app.librarymgtsystem.dtos.responses.ViewBookResponse;
+import com.app.librarymgtsystem.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -138,7 +138,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public Optional<AddBookRequest> findBookId(String findBook) {
+    public Optional<AddBookRequest> findBookById(String findBook) {
         Optional<Book> getBook = bookRepository.findById(findBook);
         if (getBook.isPresent()) {
             Book book = getBook.get();
@@ -167,10 +167,46 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Shelve findShelveByCategory(ShelveType category) {
-
         return null;
     }
 
+    @Override
+    public UpdateBookResponse updateBookByTitle(UpdateBookRequest updateBookRequest) {
+        UpdateBookResponse updateBookResponse = new UpdateBookResponse();
+
+        if (findMemberSession(true) && !findMemberAccessLevel(20)) {
+            throw new NotEligiblePageException("You're not eligible to access this page");
+        }
+        if (findMemberSession(true) && findMemberAccessLevel(20)) {
+
+            Book foundbook = findBookByTitle(updateBookRequest.getCurrentBookTitle());
+            if (foundbook == null) {
+                throw new BookNotFoundException("Book with the title '" + updateBookRequest.getCurrentBookTitle() + "' not found");
+            }
+            if (updateBookRequest.getBookTitle() != null && updateBookRequest.getBookAuthor() != null && updateBookRequest.getBookIsbn() != null && updateBookRequest.getBookDescription() != null) {
+                foundbook.setTitle(updateBookRequest.getBookTitle());
+                foundbook.setAuthor(updateBookRequest.getBookAuthor());
+                foundbook.setIsbn(updateBookRequest.getBookIsbn());
+                foundbook.setDescription(updateBookRequest.getBookDescription());
+
+                bookRepository.save(foundbook);
+                updateBookResponse.setUpdateBookMsg("Book updated successfully");
+                updateBookResponse.setId(foundbook.getId());
+                updateBookResponse.setBookTitle(foundbook.getTitle());
+                updateBookResponse.setBookAuthor(foundbook.getAuthor());
+                updateBookResponse.setBookIsbn(foundbook.getIsbn());
+                updateBookResponse.setBookDescription(foundbook.getDescription());
+            }
+        }
+        return updateBookResponse;
+    }
+
+    @Override
+    public ViewBookResponse viewBookByAll() {
+
+
+        return null;
+    }
 
 
 }

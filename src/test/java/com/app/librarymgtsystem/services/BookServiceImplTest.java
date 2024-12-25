@@ -1,22 +1,18 @@
 package com.app.librarymgtsystem.services;
 
+import com.app.librarymgtsystem.data.models.Book;
 import com.app.librarymgtsystem.data.models.Member;
 import com.app.librarymgtsystem.data.models.Shelve;
 import com.app.librarymgtsystem.data.models.ShelveType;
 import com.app.librarymgtsystem.data.repositories.BookRepository;
 import com.app.librarymgtsystem.data.repositories.MemberRepository;
 import com.app.librarymgtsystem.data.repositories.ShelveRepository;
-import com.app.librarymgtsystem.dtos.requests.AddBookRequest;
-import com.app.librarymgtsystem.dtos.requests.AddMemberRequest;
-import com.app.librarymgtsystem.dtos.requests.AddShelveRequest;
-import com.app.librarymgtsystem.dtos.requests.LoginRequest;
+import com.app.librarymgtsystem.dtos.requests.*;
 import com.app.librarymgtsystem.dtos.responses.AddBookResponse;
 import com.app.librarymgtsystem.dtos.responses.AddMemberResponse;
 import com.app.librarymgtsystem.dtos.responses.AddShelveResponse;
-import com.app.librarymgtsystem.exceptions.BookCannotBeEmptyException;
-import com.app.librarymgtsystem.exceptions.BookExistException;
-import com.app.librarymgtsystem.exceptions.NotEligiblePageException;
-import com.app.librarymgtsystem.exceptions.NotInSessionException;
+import com.app.librarymgtsystem.dtos.responses.UpdateBookResponse;
+import com.app.librarymgtsystem.exceptions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -312,7 +308,7 @@ class BookServiceImplTest {
         assertNotNull(savedBookRequest.getId(), "Generated Book Id is gotten");
         assertEquals("Book added successfully", savedBookRequest.getAddBookMsg());
 
-        Optional<AddBookRequest> findBookRequest = bookService.findBookId(savedBookRequest.getId());
+        Optional<AddBookRequest> findBookRequest = bookService.findBookById(savedBookRequest.getId());
         assertTrue(findBookRequest.isPresent(), "Book should be found");
         assertEquals(savedBookRequest.getId(), findBookRequest.get().getId());
         }
@@ -353,7 +349,7 @@ class BookServiceImplTest {
         assertNotNull(savedBookRequest.getId(), "Generated Book Id is gotten");
         assertEquals("Book added successfully", savedBookRequest.getAddBookMsg());
 
-        Optional<AddBookRequest> findBookRequest = bookService.findBookId(savedBookRequest.getId());
+        Optional<AddBookRequest> findBookRequest = bookService.findBookById(savedBookRequest.getId());
         assertTrue(findBookRequest.isPresent(), "Book can be found");
         assertEquals(savedBookRequest.getId(), findBookRequest.get().getId());
 
@@ -409,7 +405,7 @@ class BookServiceImplTest {
         assertNotNull(savedBookRequest.getId(), "Generated Book Id is gotten");
         assertEquals("Book added successfully", savedBookRequest.getAddBookMsg());
 
-        Optional<AddBookRequest> findBookRequest = bookService.findBookId(savedBookRequest.getId());
+        Optional<AddBookRequest> findBookRequest = bookService.findBookById(savedBookRequest.getId());
         assertTrue(findBookRequest.isPresent(), "Book can be found");
         assertEquals(savedBookRequest.getId(), findBookRequest.get().getId());
 
@@ -427,7 +423,200 @@ class BookServiceImplTest {
         assertEquals(ShelveType.POETRY, shelve.get().getCategory());
         assertTrue(shelve.get().isAvailable());
         assertFalse(shelve.get().isBorrowed());
+        }
+
+    @Test
+    public void test_That_Librarian_Not_In_Session_Cannot_Update_Book() {
+        Member addMemberRequest = new Member();
+        addMemberRequest.setFullName("Librarian Learned");
+        addMemberRequest.setEmail("durayg2000@yahoo.com");
+        addMemberRequest.setPassword("greatness");
+        addMemberRequest.setPhoneNumber("08027663871");
+        addMemberRequest.setAddress("No. 34, Sabo, Yaba, Lagos.");
+        addMemberRequest.setAccessLevel(10);
+        addMemberRequest.setSessionStatus(false);
+        memberRepository.save(addMemberRequest);
+        AddMemberResponse response = new AddMemberResponse();
+        response.setRegMsg("Registration successful");
+        assertEquals("Registration successful", response.getRegMsg());
+
+        UpdateBookRequest updateBookRequest = new UpdateBookRequest();
+        updateBookRequest.setSessionStatus(false);
+
+        NotInSessionException exception = assertThrows(NotInSessionException.class, () ->
+                bookService.updateBookByTitle(updateBookRequest));
+        assertEquals("Not in session or currently logged out!", exception.getMessage());
+        }
+
+    @Test
+    public void test_That_Librarian_Inside_Session_Cannot_Update_Book_Using_Wrong_Access_Level() {
+        Member addMemberRequest = new Member();
+        addMemberRequest.setFullName("Librarian Learned");
+        addMemberRequest.setEmail("durayg2000@yahoo.com");
+        addMemberRequest.setPassword("greatness");
+        addMemberRequest.setPhoneNumber("08027663871");
+        addMemberRequest.setAddress("No. 34, Sabo, Yaba, Lagos.");
+        addMemberRequest.setAccessLevel(10);
+        addMemberRequest.setSessionStatus(false);
+        memberRepository.save(addMemberRequest);
+        AddMemberResponse response = new AddMemberResponse();
+        response.setRegMsg("Registration successful");
+        assertEquals("Registration successful", response.getRegMsg());
+
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail("durayg2000@yahoo.com");
+        loginRequest.setPassword("greatness");
+        loginRequest.setSessionStatus(true);
+        Member getResponse = memberService.loginMember(loginRequest);
+        assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
+        assertEquals("greatness", getResponse.getPassword());
+
+        UpdateBookRequest updateBookRequest = new UpdateBookRequest();
+        updateBookRequest.setSessionStatus(true);
+        updateBookRequest.setAccessLevel(getResponse.getAccessLevel());
+
+        NotEligiblePageException exception = assertThrows(NotEligiblePageException.class, () ->
+                bookService.updateBookByTitle(updateBookRequest));
+        assertEquals("You're not eligible to access this page", exception.getMessage());
+        }
+
+    @Test
+    public void test_That_Librarian_Inside_Session_Cannot_Update_Book_If_Input_Book_Title_Not_found(){
+        Member addMemberRequest = new Member();
+        addMemberRequest.setFullName("Librarian Learned");
+        addMemberRequest.setEmail("durayg2000@yahoo.com");
+        addMemberRequest.setPassword("greatness");
+        addMemberRequest.setPhoneNumber("08027663871");
+        addMemberRequest.setAddress("No. 34, Sabo, Yaba, Lagos.");
+        addMemberRequest.setAccessLevel(20);
+        addMemberRequest.setSessionStatus(false);
+        memberRepository.save(addMemberRequest);
+        AddMemberResponse response = new AddMemberResponse();
+        response.setRegMsg("Registration successful");
+        assertEquals("Registration successful", response.getRegMsg());
+
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail("durayg2000@yahoo.com");
+        loginRequest.setPassword("greatness");
+        loginRequest.setSessionStatus(true);
+        Member getResponse = memberService.loginMember(loginRequest);
+        assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
+        assertEquals("greatness", getResponse.getPassword());
+
+        AddBookRequest addBookRequest = new AddBookRequest();
+        addBookRequest.setBookTitle("Be Intentional G");
+        addBookRequest.setBookAuthor("Author Two G");
+        addBookRequest.setBookIsbn("rw63829wz-G");
+        addBookRequest.setBookDescription("Characterized by conscious design or purpose");
+        addBookRequest.setSessionStatus(true);
+        addBookRequest.setAccessLevel(20);
+        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+        assertEquals(savedBookRequest.getBookTitle(), addBookRequest.getBookTitle());
+
+        UpdateBookRequest updateBookRequest = new UpdateBookRequest();
+        updateBookRequest.setCurrentBookTitle("Be Intentional G7");
+        updateBookRequest.setBookTitle("Be Intentional G1");
+        updateBookRequest.setBookAuthor("Author Two G1");
+        updateBookRequest.setBookIsbn("rw63829wz-G1");
+        updateBookRequest.setBookDescription("Updated Characterized by conscious design or purpose");
+        updateBookRequest.setSessionStatus(true);
+        updateBookRequest.setAccessLevel(20);
+
+        BookNotFoundException exception = assertThrows(BookNotFoundException.class, () ->
+                bookService.updateBookByTitle(updateBookRequest));
+        assertEquals("Book with the title '" + updateBookRequest.getCurrentBookTitle() + "' not found", exception.getMessage());
     }
 
+    @Test
+    public void test_That_Librarian_Inside_Session_Can_Add_Book__Again_Using_Right_Access_Level() {
+        Member addMemberRequest = new Member();
+        addMemberRequest.setFullName("Librarian Learned");
+        addMemberRequest.setEmail("durayg2000@yahoo.com");
+        addMemberRequest.setPassword("greatness");
+        addMemberRequest.setPhoneNumber("08027663871");
+        addMemberRequest.setAddress("No. 34, Sabo, Yaba, Lagos.");
+        addMemberRequest.setAccessLevel(20);
+        addMemberRequest.setSessionStatus(false);
+        memberRepository.save(addMemberRequest);
+        AddMemberResponse response = new AddMemberResponse();
+        response.setRegMsg("Registration successful");
+        assertEquals("Registration successful", response.getRegMsg());
+
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail("durayg2000@yahoo.com");
+        loginRequest.setPassword("greatness");
+        loginRequest.setSessionStatus(true);
+        Member getResponse = memberService.loginMember(loginRequest);
+        assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
+        assertEquals("greatness", getResponse.getPassword());
+
+        AddBookRequest addBookRequest = new AddBookRequest();
+        addBookRequest.setBookTitle("Be Intentional H");
+        addBookRequest.setBookAuthor("Author One H");
+        addBookRequest.setBookIsbn("rw63829wz-H");
+        addBookRequest.setBookDescription("Characterized by conscious design or purpose");
+        addBookRequest.setSessionStatus(true);
+        addBookRequest.setAccessLevel(getResponse.getAccessLevel());
+
+        AddBookResponse bookResponse = bookService.addBook(addBookRequest);
+        assertEquals(bookResponse.getBookTitle(), addBookRequest.getBookTitle());
+        assertEquals("Book added successfully", bookResponse.getAddBookMsg());
+    }
+
+    @Test
+    public void test_That_Librarian_Inside_Session_Can_Update_Book_By_Book_Title() {
+        Member addMemberRequest = new Member();
+        addMemberRequest.setFullName("Librarian Learned");
+        addMemberRequest.setEmail("durayg2000@yahoo.com");
+        addMemberRequest.setPassword("greatness");
+        addMemberRequest.setPhoneNumber("08027663871");
+        addMemberRequest.setAddress("No. 34, Sabo, Yaba, Lagos.");
+        addMemberRequest.setAccessLevel(20);
+        addMemberRequest.setSessionStatus(false);
+        memberRepository.save(addMemberRequest);
+        AddMemberResponse response = new AddMemberResponse();
+        response.setRegMsg("Registration successful");
+        assertEquals("Registration successful", response.getRegMsg());
+
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail("durayg2000@yahoo.com");
+        loginRequest.setPassword("greatness");
+        loginRequest.setSessionStatus(true);
+        Member getResponse = memberService.loginMember(loginRequest);
+        assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
+        assertEquals("greatness", getResponse.getPassword());
+
+        AddBookRequest addBookRequest = new AddBookRequest();
+        addBookRequest.setBookTitle("Be Intentional G");
+        addBookRequest.setBookAuthor("Author Two G");
+        addBookRequest.setBookIsbn("rw63829wz-G");
+        addBookRequest.setBookDescription("Characterized by conscious design or purpose");
+        addBookRequest.setSessionStatus(true);
+        addBookRequest.setAccessLevel(20);
+        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+        assertEquals(savedBookRequest.getBookTitle(), addBookRequest.getBookTitle());
+
+        UpdateBookRequest updateBookRequest = new UpdateBookRequest();
+        updateBookRequest.setCurrentBookTitle("Be Intentional G");
+        updateBookRequest.setBookTitle("Be Intentional G2");
+        updateBookRequest.setBookAuthor("Author Two G2");
+        updateBookRequest.setBookIsbn("rw63829wz-G2");
+        updateBookRequest.setBookDescription("Updated Characterized by conscious design or purpose");
+        updateBookRequest.setSessionStatus(true);
+        updateBookRequest.setAccessLevel(20);
+
+        UpdateBookResponse updateBookResponse = bookService.updateBookByTitle(updateBookRequest);
+        assertEquals("Book updated successfully", updateBookResponse.getUpdateBookMsg());
+        assertEquals("Be Intentional G2", updateBookResponse.getBookTitle());
+        assertEquals("Author Two G2", updateBookResponse.getBookAuthor());
+        assertEquals("rw63829wz-G2", updateBookResponse.getBookIsbn());
+        assertEquals("Updated Characterized by conscious design or purpose", updateBookResponse.getBookDescription());
+
+        Book updatedBook = bookRepository.findByTitle("Be Intentional G2");
+        assertEquals("Be Intentional G2", updatedBook.getTitle());
+        assertEquals("Author Two G2", updatedBook.getAuthor());
+        assertEquals("rw63829wz-G2", updatedBook.getIsbn());
+        assertEquals("Updated Characterized by conscious design or purpose", updatedBook.getDescription());
+    }
 
 }
