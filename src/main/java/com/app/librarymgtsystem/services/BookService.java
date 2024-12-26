@@ -40,7 +40,11 @@ public interface BookService {
 
     UpdateBookResponse updateBookByTitle(UpdateBookRequest updateBookRequest);
 
-    ViewBookResponse viewBookByAll();
+    ViewBookResponse viewBookByAll(int page, int size);
+
+    ViewBookResponse viewBookByTitle(String title);
+
+    void deleteBookByTitle(String title);
 
     Shelve findShelveByCategory(ShelveType category);
 

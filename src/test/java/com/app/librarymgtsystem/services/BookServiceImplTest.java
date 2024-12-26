@@ -528,7 +528,7 @@ class BookServiceImplTest {
     }
 
     @Test
-    public void test_That_Librarian_Inside_Session_Can_Add_Book__Again_Using_Right_Access_Level() {
+    public void test_That_Librarian_Inside_Session_Can_Add_Book_Again_Using_Right_Access_Level() {
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");

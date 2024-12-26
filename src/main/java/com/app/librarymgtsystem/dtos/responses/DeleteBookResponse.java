@@ -1,23 +1,18 @@
 package com.app.librarymgtsystem.dtos.responses;
 
 import com.app.librarymgtsystem.data.models.Book;
-import com.app.librarymgtsystem.data.models.ShelveType;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-public class ViewBookResponse {
+public class DeleteBookResponse {
     private String id;
     private String bookTitle;
     private String bookAuthor;
     private String bookIsbn;
     private String bookDescription;
-
-    private ShelveType category;
-    private boolean available = true;
-    private boolean borrowed = false;
 
     private boolean sessionStatus;
     private int accessLevel;
