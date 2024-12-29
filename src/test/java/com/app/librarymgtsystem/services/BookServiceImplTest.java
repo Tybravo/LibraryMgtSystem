@@ -72,6 +72,29 @@ class BookServiceImplTest {
         }
 
     @Test
+    public void test_That_Member_Not_In_Session_Cannot_Add_Book_With_Shelve() {
+        AddMemberRequest addMemberRequest = new AddMemberRequest();
+        addMemberRequest.setFullName("Librarian Learned");
+        addMemberRequest.setEmail("durayg2000@yahoo.com");
+        addMemberRequest.setPassword("greatness");
+        addMemberRequest.setPhoneNumber("08027663871");
+        addMemberRequest.setAddress("No. 34, Sabo, Yaba, Lagos.");
+        addMemberRequest.setAccessLevel(10);
+        addMemberRequest.setSessionStatus(false);
+        AddMemberResponse response = memberService.registerMember(addMemberRequest);
+        assertEquals("Registration successful", response.getRegMsg());
+
+        AddBookRequest addbookRequest = new AddBookRequest();
+        addbookRequest.setSessionStatus(false);
+        AddShelveRequest addShelveRequest = new AddShelveRequest();
+        addShelveRequest.setSessionStatus(false);
+
+        NotInSessionException exception = assertThrows(NotInSessionException.class, () ->
+                bookService.addBookWithShelve(addbookRequest, addShelveRequest));
+        assertEquals("Not in session or currently logged out!", exception.getMessage());
+    }
+
+    @Test
     public void test_That_Title_Author_ISBN_Of_Book_Cannot_Be_Empty(){
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
@@ -146,6 +169,38 @@ class BookServiceImplTest {
                 bookService.addBook(addbookRequest));
         assertEquals("You're not eligible to access this page", exception.getMessage());
         }
+
+    @Test
+    public void test_That_Member_Inside_Session_Cannot_Add_Book_With_Shelve_Using_Wrong_Access_Level() {
+        AddMemberRequest addMemberRequest = new AddMemberRequest();
+        addMemberRequest.setFullName("Librarian Learned");
+        addMemberRequest.setEmail("durayg2000@yahoo.com");
+        addMemberRequest.setPassword("greatness");
+        addMemberRequest.setPhoneNumber("08027663871");
+        addMemberRequest.setAddress("No. 34, Sabo, Yaba, Lagos.");
+        addMemberRequest.setAccessLevel(10);
+        addMemberRequest.setSessionStatus(false);
+        AddMemberResponse response = memberService.registerMember(addMemberRequest);
+        assertEquals("Registration successful", response.getRegMsg());
+
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail("durayg2000@yahoo.com");
+        loginRequest.setPassword("greatness");
+        loginRequest.setSessionStatus(true);
+        Member getResponse = memberService.loginMember(loginRequest);
+        assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
+        assertEquals("greatness", getResponse.getPassword());
+
+        AddBookRequest addbookRequest = new AddBookRequest();
+        addbookRequest.setSessionStatus(true);
+        addbookRequest.setAccessLevel(getResponse.getAccessLevel());
+        AddShelveRequest addShelveRequest = new AddShelveRequest();
+        addShelveRequest.setSessionStatus(true);
+
+        NotEligiblePageException exception = assertThrows(NotEligiblePageException.class, () ->
+                bookService.addBookWithShelve(addbookRequest, addShelveRequest));
+        assertEquals("You're not eligible to access this page", exception.getMessage());
+    }
 
     @Test
     public void test_That_Librarian_Inside_Session_Can_Add_Book_Using_Right_Access_Level() {
@@ -311,7 +366,7 @@ class BookServiceImplTest {
         }
 
     @Test
-    public void test_That_Book_Id_And_FICTION_Category_Can_Be_Saved_Into_Shelve() {
+    public void test_That_Book_Id_And_FICTION_Category_Can_Be_Saved_Into_Book_Shelve_Using_addBook_method() {
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -421,6 +476,58 @@ class BookServiceImplTest {
         assertTrue(shelve.get().isAvailable());
         assertFalse(shelve.get().isBorrowed());
         }
+
+    @Test
+    public void test_That_Book_Id_And_EDUCATION_Category_Can_Be_Saved_Into_Book_Shelve_Using_addBookWithShelve_method() {
+        Member member = new Member();
+        member.setFullName("Librarian Learned");
+        member.setEmail("durayg2000@yahoo.com");
+        member.setPassword("greatness");
+        member.setPhoneNumber("08027663871");
+        member.setAddress("No. 34, Sabo, Yaba, Lagos.");
+        member.setAccessLevel(20);
+        member.setSessionStatus(true);
+        memberRepository.save(member);
+        AddMemberResponse response = new AddMemberResponse();
+        response.setRegMsg("Registration successful");
+        assertEquals("Registration successful", response.getRegMsg());
+
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail("durayg2000@yahoo.com");
+        loginRequest.setPassword("greatness");
+        loginRequest.setSessionStatus(true);
+        Member getResponse = memberService.loginMember(loginRequest);
+        assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
+        assertEquals("greatness", getResponse.getPassword());
+
+        AddBookRequest addBookRequest = new AddBookRequest();
+        addBookRequest.setBookTitle("Be Intentional FF");
+        addBookRequest.setBookAuthor("Author Two FF");
+        addBookRequest.setBookIsbn("rw63829wz-FF");
+        addBookRequest.setBookDescription("Characterized by conscious design or purpose FF");
+
+        AddShelveRequest addShelveRequest = new AddShelveRequest();
+        addShelveRequest.setBookCategory(ShelveType.EDUCATION);
+        addShelveRequest.setBookGenre("Genre FF");
+
+        AddBookResponse addBookResponse = bookService.addBookWithShelve(addBookRequest, addShelveRequest);
+        assertNotNull(addBookResponse.getId(), "Book ID should not be null");
+        assertEquals("Be Intentional FF", addBookResponse.getBookTitle());
+        assertEquals("Author Two FF", addBookResponse.getBookAuthor());
+        assertEquals("rw63829wz-FF", addBookResponse.getBookIsbn());
+        assertEquals("Characterized by conscious design or purpose FF", addBookResponse.getBookDescription());
+
+        Optional<Book> savedBook = bookRepository.findById(addBookResponse.getId());
+        assertTrue(savedBook.isPresent(), "Saved book should be found in the repository");
+
+        Optional<Shelve> savedShelve = shelveRepository.findByBookId(addBookResponse.getId());
+        assertTrue(savedShelve.isPresent());
+        assertEquals(addBookResponse.getId(), savedShelve.get().getBookId());
+        assertEquals(ShelveType.EDUCATION, savedShelve.get().getCategory());
+        assertEquals("Genre FF", savedShelve.get().getGenre());
+        assertTrue(savedShelve.get().isAvailable());
+        assertFalse(savedShelve.get().isBorrowed());
+    }
 
     @Test
     public void test_That_Librarian_Not_In_Session_Cannot_Update_Book() {

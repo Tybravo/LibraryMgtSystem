@@ -17,7 +17,7 @@ public interface BookService {
 
     AddBookResponse addBook(AddBookRequest addBookRequest);
 
-    AddBookResponse addBookWithShelve(AddBookRequest addBookRequest);
+    AddBookResponse addBookWithShelve(AddBookRequest addBookRequest, AddShelveRequest addShelveRequest);
 
     String getMemberEmail();
 

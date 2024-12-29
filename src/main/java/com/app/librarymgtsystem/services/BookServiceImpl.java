@@ -148,7 +148,7 @@ public class BookServiceImpl implements BookService {
 
 
     @Override
-    public AddBookResponse addBookWithShelve(AddBookRequest addBookRequest) {
+    public AddBookResponse addBookWithShelve(AddBookRequest addBookRequest, AddShelveRequest addShelveRequest) {
         if (!findMemberSession(true) || !findMemberAccessLevel(20)) {
             throw new NotEligiblePageException("You're not eligible to access this page");
         }
@@ -169,10 +169,18 @@ public class BookServiceImpl implements BookService {
             book.setIsbn(addBookRequest.getBookIsbn());
             book.setDescription(addBookRequest.getBookDescription());
             bookRepository.save(book);
-            AddShelveRequest addShelveRequest = new AddShelveRequest();
-            addShelveRequest.setBookId(book.getId());
 
-            addShelveWithBookId(addShelveRequest);
+            addShelveRequest.setBookId(book.getId());
+            Optional<Book> foundBook = bookRepository.findById(addShelveRequest.getBookId());
+            if (foundBook.isPresent()) {
+                Shelve shelve = new Shelve();
+                shelve.setBookId(addShelveRequest.getBookId());
+                shelve.setCategory(addShelveRequest.getBookCategory());
+                shelve.setGenre(addShelveRequest.getBookGenre());
+                shelve.setAvailable(true);
+                shelve.setBorrowed(false);
+                shelveRepository.save(shelve);
+            }
 
             AddBookResponse addBookResponse = new AddBookResponse();
             addBookResponse.setAddBookMsg("Book added successfully");
@@ -196,7 +204,6 @@ public class BookServiceImpl implements BookService {
         }
         Shelve shelve = new Shelve();
         shelve.setBookId(addShelveRequest.getBookId());
-        shelve.setTitle(addShelveRequest.getBookTitle());
         shelve.setCategory(addShelveRequest.getBookCategory());
         shelve.setGenre(addShelveRequest.getBookGenre());
         shelve.setAvailable(true);

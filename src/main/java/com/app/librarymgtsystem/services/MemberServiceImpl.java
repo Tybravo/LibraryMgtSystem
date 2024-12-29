@@ -9,7 +9,6 @@ import com.app.librarymgtsystem.dtos.responses.AddMemberResponse;
 import com.app.librarymgtsystem.dtos.responses.LoginResponse;
 import com.app.librarymgtsystem.dtos.responses.LogoutResponse;
 import com.app.librarymgtsystem.exceptions.*;
-import com.app.librarymgtsystem.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +30,7 @@ public class MemberServiceImpl implements MemberService {
         addMemberRequest.getFullName() == null || addMemberRequest.getFullName().isEmpty() ||
         addMemberRequest.getPhoneNumber() == null || addMemberRequest.getPhoneNumber().isEmpty() ||
         addMemberRequest.getAddress() == null || addMemberRequest.getAddress().isEmpty() ||
-        addMemberRequest.getPassword().length() > 8 ) {
+        addMemberRequest.getPassword().length() < 7 ) {
             throw new EmailCannotBeEmptyException("Registration Fields cannot be empty");
         }
         if(!addMemberRequest.getEmail().contains("@") || !addMemberRequest.getEmail().contains(".") || !addMemberRequest.getEmail().contains("com")) {

@@ -17,6 +17,8 @@ public class AddShelveRequest {
     private String bookGenre;
     private boolean available = true;
     private boolean borrowed = false;
+
+    private boolean sessionStatus;
     private String addShelveMsg;
     private LocalDateTime creationDate = LocalDateTime.now();
 
