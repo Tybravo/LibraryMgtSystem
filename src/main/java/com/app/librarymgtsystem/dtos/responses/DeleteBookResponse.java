@@ -16,7 +16,7 @@ public class DeleteBookResponse {
 
     private boolean sessionStatus;
     private int accessLevel;
-    private String viewBookMsg;
+    private String deleteBookMsg;
     private LocalDateTime creationDate = LocalDateTime.now();
 
     private int currentPage;

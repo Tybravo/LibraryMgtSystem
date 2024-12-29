@@ -11,8 +11,9 @@ import java.util.List;
 public class AddShelveResponse {
     private String id;
     private String bookId;
-    private ShelveType category;
-    private String genre;
+    private String bookTitle;
+    private ShelveType bookCategory;
+    private String bookGenre;
     private boolean available = true;
     private boolean borrowed = false;
     private String addShelveMsg;

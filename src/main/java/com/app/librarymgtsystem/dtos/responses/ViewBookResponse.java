@@ -15,7 +15,8 @@ public class ViewBookResponse {
     private String bookIsbn;
     private String bookDescription;
 
-    private ShelveType category;
+    private ShelveType bookCategory;
+    private String bookGenre;
     private boolean available = true;
     private boolean borrowed = false;
 

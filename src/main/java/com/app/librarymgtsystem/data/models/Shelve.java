@@ -15,6 +15,7 @@ public class Shelve {
     @Id
     private String id;
     private String bookId;
+    private String title;
     private String memberId;
     private ShelveType category;
     private String genre;

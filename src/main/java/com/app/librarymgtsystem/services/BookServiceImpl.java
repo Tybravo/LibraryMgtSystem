@@ -10,11 +10,7 @@ import com.app.librarymgtsystem.data.repositories.ShelveRepository;
 import com.app.librarymgtsystem.dtos.requests.AddBookRequest;
 import com.app.librarymgtsystem.dtos.requests.AddShelveRequest;
 import com.app.librarymgtsystem.dtos.requests.UpdateBookRequest;
-import com.app.librarymgtsystem.dtos.requests.ViewBookRequest;
-import com.app.librarymgtsystem.dtos.responses.UpdateBookResponse;
-import com.app.librarymgtsystem.dtos.responses.AddBookResponse;
-import com.app.librarymgtsystem.dtos.responses.AddShelveResponse;
-import com.app.librarymgtsystem.dtos.responses.ViewBookResponse;
+import com.app.librarymgtsystem.dtos.responses.*;
 import com.app.librarymgtsystem.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -47,6 +43,7 @@ public class BookServiceImpl implements BookService {
         return member.isSessionStatus();
     }
 
+
     public String getMemberEmail() {
         Member currentMember = memberRepository.findBySessionStatus(true);
         if (currentMember != null) {
@@ -55,6 +52,7 @@ public class BookServiceImpl implements BookService {
             throw new NotInSessionException("Membership account not found");
         }
     }
+
 
     @Override
     public boolean findMemberAccessLevel(int accessLevel) {
@@ -76,6 +74,7 @@ public class BookServiceImpl implements BookService {
         return bookRepository.findByIsbn(isbn);
     }
 
+
     @Override
     public void bookCannotBeEmpty(AddBookRequest addEmptyBook) {
         if (addEmptyBook.getBookTitle() == null || addEmptyBook.getBookTitle().isEmpty() ||
@@ -85,6 +84,7 @@ public class BookServiceImpl implements BookService {
             throw new BookCannotBeEmptyException("Book detail cannot be empty!");
         }
     }
+
 
     @Override
     public boolean bookAlreadyExist(AddBookRequest addBookRequest) {
@@ -96,6 +96,7 @@ public class BookServiceImpl implements BookService {
         }
         return false;
     }
+
 
     @Override
     public boolean isbnAlreadyExist(AddBookRequest addBookRequest) {
@@ -131,6 +132,7 @@ public class BookServiceImpl implements BookService {
                 book.setDescription(addBookRequest.getBookDescription());
                 bookRepository.save(book);
                 addBookRequest.setId(book.getId());
+                addBookRequest.setBookTitle(book.getTitle());
 
                 addBookResponse.setAddBookMsg("Book added successfully");
                 addBookResponse.setId(book.getId());
@@ -143,6 +145,69 @@ public class BookServiceImpl implements BookService {
         }
         return addBookResponse;
     }
+
+
+    @Override
+    public AddBookResponse addBookWithShelve(AddBookRequest addBookRequest) {
+        if (!findMemberSession(true) || !findMemberAccessLevel(20)) {
+            throw new NotEligiblePageException("You're not eligible to access this page");
+        }
+        if (bookAlreadyExist(addBookRequest)) {
+            throw new BookExistException("Book already exists! Adjust title or author.");
+        }
+        if (isbnAlreadyExist(addBookRequest)) {
+            throw new BookExistException("ISBN already exists!");
+        }
+
+        String memberEmail = getMemberEmail();
+        bookCannotBeEmpty(addBookRequest);
+
+        if (memberEmail != null) {
+            Book book = new Book();
+            book.setTitle(addBookRequest.getBookTitle());
+            book.setAuthor(addBookRequest.getBookAuthor());
+            book.setIsbn(addBookRequest.getBookIsbn());
+            book.setDescription(addBookRequest.getBookDescription());
+            bookRepository.save(book);
+            AddShelveRequest addShelveRequest = new AddShelveRequest();
+            addShelveRequest.setBookId(book.getId());
+
+            addShelveWithBookId(addShelveRequest);
+
+            AddBookResponse addBookResponse = new AddBookResponse();
+            addBookResponse.setAddBookMsg("Book added successfully");
+            addBookResponse.setId(book.getId());
+            addBookResponse.setBookTitle(book.getTitle());
+            addBookResponse.setBookAuthor(book.getAuthor());
+            addBookResponse.setBookIsbn(book.getIsbn());
+            addBookResponse.setBookDescription(book.getDescription());
+            addBookResponse.setCreationDate(book.getCreationDate());
+            return addBookResponse;
+        }
+        throw new LoginEmailException("Unexpected error: Member email not found");
+    }
+
+
+    @Override
+    public AddShelveResponse addShelveWithBookId(AddShelveRequest addShelveRequest) {
+        Optional<Book> book = bookRepository.findById(addShelveRequest.getBookId());
+        if (book.isEmpty()) {
+            throw new BookNotFoundException("Book not found to store in shelve");
+        }
+        Shelve shelve = new Shelve();
+        shelve.setBookId(addShelveRequest.getBookId());
+        shelve.setTitle(addShelveRequest.getBookTitle());
+        shelve.setCategory(addShelveRequest.getBookCategory());
+        shelve.setGenre(addShelveRequest.getBookGenre());
+        shelve.setAvailable(true);
+        shelve.setBorrowed(false);
+        shelveRepository.save(shelve);
+
+        AddShelveResponse addShelveResponse = new AddShelveResponse();
+        addShelveResponse.setAddShelveMsg("Book added to shelve successfully");
+        return addShelveResponse;
+    }
+
 
     @Override
     public Optional<AddBookRequest> findBookById(String findBook) {
@@ -157,25 +222,12 @@ public class BookServiceImpl implements BookService {
         return Optional.empty();
     }
 
-    @Override
-    public AddShelveResponse addShelveWithBookId(AddShelveRequest addShelveRequest) {
-        Shelve shelve = new Shelve();
-        shelve.setCategory(addShelveRequest.getCategory());
-        shelve.setBookId(addShelveRequest.getBookId());
-        shelve.setGenre(addShelveRequest.getGenre());
-        shelve.setAvailable(true);
-        shelve.setBorrowed(false);
-        shelveRepository.save(shelve);
-
-        AddShelveResponse addShelveResponse = new AddShelveResponse();
-        addShelveResponse.setAddShelveMsg("Book added to shelve successfully");
-        return addShelveResponse;
-    }
 
     @Override
     public Shelve findShelveByCategory(ShelveType category) {
         return null;
     }
+
 
     @Override
     public UpdateBookResponse updateBookByTitle(UpdateBookRequest updateBookRequest) {
@@ -211,6 +263,9 @@ public class BookServiceImpl implements BookService {
     @Override
     public ViewBookResponse viewBookByAll(int page, int size) {
         ViewBookResponse viewBookResponse = new ViewBookResponse();
+        if (!findMemberSession(true)){
+            findMemberSession(false);
+        }
         if (findMemberSession(true) && !findMemberAccessLevel(20)) {
             throw new NotEligiblePageException("You're not eligible to access this page");
         }
@@ -219,7 +274,7 @@ public class BookServiceImpl implements BookService {
             Page<Book> booksPage = bookRepository.findAll(pageable);
 
             if (booksPage.isEmpty()) {
-                throw new BookNotFoundException("There is no available book to view");
+                throw new BookNotFoundException("Book shelve is currently empty");
             }
 
             List<Book> bookResponses = booksPage.getContent().stream()
@@ -248,10 +303,13 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public ViewBookResponse viewBookByTitle(String title) {
-        if (findMemberSession(false)) {
-            throw new NotInSessionException("You're currently out of session");
+        if (!findMemberSession(true)) {
+           findMemberSession(false);
         }
-        if (findMemberSession(true)) {
+        if (findMemberSession(true) && !findMemberAccessLevel(20)) {
+            throw new NotEligiblePageException("You're not eligible to access this page");
+        }
+        if (findMemberSession(true) && findMemberAccessLevel(20)) {
             Shelve shelve = findShelveByBookTitle(title);
             String bookId = shelve.getBookId();
 
@@ -268,7 +326,8 @@ public class BookServiceImpl implements BookService {
             bookResponse.setBookDescription(book.getDescription());
             bookResponse.setCreationDate(book.getCreationDate());
 
-            bookResponse.setCategory(shelve.getCategory());
+            bookResponse.setBookCategory(shelve.getCategory());
+            bookResponse.setBookGenre(shelve.getGenre());
             bookResponse.setAvailable(shelve.isAvailable());
             bookResponse.setBorrowed(shelve.isBorrowed());
             return bookResponse;
@@ -276,10 +335,15 @@ public class BookServiceImpl implements BookService {
         return viewBookByTitle(title);
     }
 
+
     @Override
-    public void deleteBookByTitle(String title) {
+    public DeleteBookResponse deleteBookByTitle(String title) {
+        DeleteBookResponse deleteBookResponse = new DeleteBookResponse();
         if (findMemberSession(false)) {
-            throw new NotInSessionException("You're currently out of session");
+            findMemberSession(false);
+        }
+        if (findMemberSession(true) && !findMemberAccessLevel(20)) {
+            throw new NotEligiblePageException("You're not eligible to access this page");
         }
         if (findMemberSession(true)) {
             Shelve shelve = findShelveByBookTitle(title);
@@ -293,8 +357,11 @@ public class BookServiceImpl implements BookService {
             Book book = optionalBook.get();
             shelveRepository.delete(shelve);
             bookRepository.delete(book);
+            deleteBookResponse.setDeleteBookMsg("Book deleted successfully");
         }
+        return deleteBookResponse;
     }
+
 
     private Shelve findShelveByBookTitle(String title) {
         Optional<Book> optionalBook = bookRepository.findByTitleIgnoreCase(title);
@@ -305,7 +372,7 @@ public class BookServiceImpl implements BookService {
         String bookId = book.getId();
         Optional<Shelve> optionalShelve = shelveRepository.findByBookId(bookId);
         if (optionalShelve.isEmpty()) {
-            throw new ShelveNotFoundException("Shelve entry for book entered not found.");
+            throw new ShelveNotFoundException("Shelve entry for the book entered not found.");
         }
         return optionalShelve.get();
     }
