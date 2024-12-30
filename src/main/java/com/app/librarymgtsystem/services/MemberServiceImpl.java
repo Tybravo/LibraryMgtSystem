@@ -12,6 +12,8 @@ import com.app.librarymgtsystem.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class MemberServiceImpl implements MemberService {
     @Autowired
@@ -20,7 +22,8 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public Member findMemberByEmail(String emailAddy) {
-        return memberRepository.findByEmail(emailAddy);
+        Optional<Member> optionalMember = memberRepository.findByEmail(emailAddy);
+        return optionalMember.orElse(null);
     }
 
     @Override

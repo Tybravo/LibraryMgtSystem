@@ -318,7 +318,7 @@ public class MemberServiceImplTest {
     }
 
     @Test
-    public void test_That_Logout_Session_Is_Invalidated() {
+    public void test_That_Logout_Session_Is_Executed() {
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Ade Bravo");
         addMemberRequest.setEmail("twinebravo@gmail.com");

@@ -9,7 +9,7 @@ import java.util.Optional;
 @Repository
 public interface MemberRepository extends MongoRepository<Member, String> {
 
-    Member findByEmail(String emailAddy);
+    Optional<Member> findByEmail(String emailAddy);
     Member findByAccessLevel(int accessLevel);
     Member findBySessionStatus(Boolean sessionStatus);
     Optional<Member> findBySessionStatusTrue();
