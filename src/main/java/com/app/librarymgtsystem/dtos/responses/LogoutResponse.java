@@ -7,6 +7,8 @@ public class LogoutResponse {
     private String id;
     private String token;
     private String email;
+    private String sessionToken;
+    private String sessionEmail;
 
     private String LogoutMsg;
 }

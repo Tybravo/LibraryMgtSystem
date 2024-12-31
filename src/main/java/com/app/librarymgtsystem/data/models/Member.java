@@ -21,5 +21,7 @@ public class Member {
     private String logMsg;
     private int accessLevel;
     private boolean sessionStatus = false;
+    private String sessionToken;
+    private String sessionEmail;
     private LocalDateTime creationDate = LocalDateTime.now();
 }

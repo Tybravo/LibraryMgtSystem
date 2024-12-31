@@ -18,6 +18,8 @@ public class AddMemberRequest {
     private String regMsg;
     private int accessLevel;
     private boolean sessionStatus = false;
+    private String sessionToken;
+    private String sessionEmail;
     private LocalDateTime creationDate = LocalDateTime.now();
 }
 

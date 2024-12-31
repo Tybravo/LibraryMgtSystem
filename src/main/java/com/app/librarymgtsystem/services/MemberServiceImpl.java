@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class MemberServiceImpl implements MemberService {
@@ -97,10 +98,16 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public LoginResponse loginPassword(LoginRequest loginRequest) {
+        String sessionToken = UUID.randomUUID().toString();
             Member foundMemberPassword = findMemberByEmail(loginRequest.getEmail());
             if (foundMemberPassword != null && (foundMemberPassword.getPassword().equals(loginRequest.getPassword()))) {
                 foundMemberPassword.setSessionStatus(true);
+                foundMemberPassword.setSessionToken(sessionToken);
+                foundMemberPassword.setSessionEmail(foundMemberPassword.getEmail());
                 memberRepository.save(foundMemberPassword);
+                LoggedInUserContext.setSessionToken(sessionToken);
+                LoggedInUserContext.setSessionEmail(foundMemberPassword.getEmail());
+
                 LoginResponse regResponse = new LoginResponse();
                 regResponse.setId(foundMemberPassword.getId());
                 regResponse.setEmail(foundMemberPassword.getEmail());
@@ -135,6 +142,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public Member loginMember(LoginRequest loginRequest) {
+        String sessionToken = UUID.randomUUID().toString();
         Member foundMember = findMemberByEmail(loginRequest.getEmail());
 
         if(loginRequest.getEmail() == null || loginRequest.getEmail().isEmpty() ||
@@ -144,7 +152,11 @@ public class MemberServiceImpl implements MemberService {
         if (foundMember != null && foundMember.getEmail().equals(loginRequest.getEmail()) &&
                 loginRequest.getPassword().equals(foundMember.getPassword())) {
             foundMember.setSessionStatus(true);
+            foundMember.setSessionToken(sessionToken);
+            foundMember.setSessionEmail(foundMember.getEmail());
             memberRepository.save(foundMember);
+            LoggedInUserContext.setSessionToken(sessionToken);
+            LoggedInUserContext.setSessionEmail(foundMember.getEmail());
             foundMember.setId(foundMember.getId());
             foundMember.setLogMsg("Member Login successful");
             return foundMember;
@@ -155,21 +167,49 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public LogoutResponse logoutMember(LogoutRequest logoutRequest) {
-        Member foundMember = findMemberByEmail(logoutRequest.getEmail());
-        if (foundMember != null) {
-           if(!foundMember.isSessionStatus()){
-               throw new LogoutMemberException("You are currently out of session");
-           }
-           foundMember.setSessionStatus(false);
-               memberRepository.save(foundMember);
-               LogoutResponse outSession = new LogoutResponse();
-               outSession.setEmail(logoutRequest.getEmail());
-               outSession.setLogoutMsg("Logged out successfully");
-               return outSession;
-           } else {
-            throw new LogoutMemberException("Member does not exist");
+        try {
+            Member foundMember = findMemberByEmail(logoutRequest.getEmail());
+            if (foundMember != null) {
+                if (!foundMember.isSessionStatus()) {
+                    throw new LogoutMemberException("You are currently out of session");
+                }
+                foundMember.setSessionStatus(false);
+                memberRepository.save(foundMember);
+                LogoutResponse outSession = new LogoutResponse();
+                outSession.setEmail(logoutRequest.getEmail());
+                outSession.setLogoutMsg("Logged out successfully");
+                return outSession;
+            } else {
+                throw new LogoutMemberException("Member does not exist");
+            }
+        } finally {
+            LoggedInUserContext.clear();
         }
     }
+
+
+    public static class LoggedInUserContext {
+        private static final ThreadLocal<String> sessionEmail = new ThreadLocal<>();
+        private static final ThreadLocal<String> sessionToken = new ThreadLocal<>();
+
+        public static void setSessionEmail(String email) {
+            sessionEmail.set(email);
+        }
+        public static String getSessionEmail() {
+            return sessionEmail.get();
+        }
+        public static void setSessionToken(String token) {
+            sessionToken.set(token);
+        }
+        public static String getSessionToken() {
+            return sessionToken.get();
+        }
+        public static void clear() {
+            sessionEmail.remove();
+            sessionToken.remove();
+        }
+    }
+
 
 }
 

@@ -13,13 +13,13 @@ import java.util.Optional;
 
 public interface BookService {
 
-    boolean findMemberSession(String email);
+    boolean findMemberSession();
 
     boolean findMemberAccessLevel(int accessLevel);
 
-    AddBookResponse addBook(AddBookRequest addBookRequest, String email);
+    AddBookResponse addBook(AddBookRequest addBookRequest);
 
-    AddBookResponse addBookWithShelve(AddBookRequest addBookRequest, AddShelveRequest addShelveRequest, String email);
+    AddBookResponse addBookWithShelve(AddBookRequest addBookRequest, AddShelveRequest addShelveRequest);
 
     Optional<AddBookRequest> findBookById(String findBook);
 
@@ -37,15 +37,15 @@ public interface BookService {
 
     void bookCannotBeEmpty(AddBookRequest addEmptyBook);
 
-    UpdateBookResponse updateBookByTitle(UpdateBookRequest updateBookRequest, String email);
+    UpdateBookResponse updateBookByTitle(UpdateBookRequest updateBookRequest);
 
-    ViewBookResponse viewBookByAll(int page, int size, String email);
+    ViewBookResponse viewBookByAll(int page, int size);
 
-    ViewBookResponse viewBookForMembersByAll(int page, int size, String email);
+    ViewBookResponse viewBookForMembersByAll(int page, int size);
 
-    ViewBookResponse viewBookByTitle(String title, String email);
+    ViewBookResponse viewBookByTitle(String title);
 
-    DeleteBookResponse deleteBookByTitle(String title, String email);
+    DeleteBookResponse deleteBookByTitle(String title);
 
     Shelve findShelveByCategory(ShelveType category);
 

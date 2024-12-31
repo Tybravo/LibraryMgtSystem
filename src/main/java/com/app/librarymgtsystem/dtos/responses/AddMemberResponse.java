@@ -12,6 +12,9 @@ public class   AddMemberResponse {
     private String address;
     private int accessLevel;
     private boolean sessionStatus = false;
+    private String sessionToken;
+    private String sessionEmail;
+
     private LocalDateTime creationDate = LocalDateTime.now();
     private String regMsg ;
 }

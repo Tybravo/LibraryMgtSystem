@@ -9,4 +9,8 @@ public class LoginRequest {
     private String password;
     private int accessLevel;
     private Boolean sessionStatus = false;
+    private String sessionToken;
+    private String sessionEmail;
+
+
 }

@@ -11,6 +11,8 @@ public class LoginResponse {
     private String logMsg;
     private int accessLevel;
 
+    private String sessionToken;
+    private String sessionEmail;
     private Boolean sessionStatus;
 }
 
