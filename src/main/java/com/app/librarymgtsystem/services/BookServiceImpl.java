@@ -52,6 +52,7 @@ public class BookServiceImpl implements BookService {
         return true;
     }
 
+
     @Override
     public boolean findMemberAccessLevel(int accessLevel) {
         return memberRepository.findByAccessLevel(accessLevel) != null;
@@ -106,7 +107,7 @@ public class BookServiceImpl implements BookService {
     }
 
 
-    @Override
+     @Override
     public AddBookResponse addBook(AddBookRequest addBookRequest) {
         AddBookResponse addBookResponse = new AddBookResponse();
         if (findMemberSession() && !findMemberAccessLevel(20)) {
@@ -229,7 +230,7 @@ public class BookServiceImpl implements BookService {
 
 
     @Override
-    public UpdateBookResponse updateBookByTitle(UpdateBookRequest updateBookRequest) {
+    public UpdateBookResponse updateBookByTitle(UpdateBookRequest updateBookRequest, String title) {
         UpdateBookResponse updateBookResponse = new UpdateBookResponse();
 
         if (findMemberSession() && !findMemberAccessLevel(20)) {
@@ -247,17 +248,20 @@ public class BookServiceImpl implements BookService {
                 foundbook.setIsbn(updateBookRequest.getBookIsbn());
                 foundbook.setDescription(updateBookRequest.getBookDescription());
 
-                bookRepository.save(foundbook);
-                updateBookResponse.setUpdateBookMsg("Book updated successfully");
-                updateBookResponse.setId(foundbook.getId());
-                updateBookResponse.setBookTitle(foundbook.getTitle());
-                updateBookResponse.setBookAuthor(foundbook.getAuthor());
-                updateBookResponse.setBookIsbn(foundbook.getIsbn());
-                updateBookResponse.setBookDescription(foundbook.getDescription());
+                if(findShelveByBookTitleAvailable(title).isAvailable()) {
+                    bookRepository.save(foundbook);
+                    updateBookResponse.setUpdateBookMsg("Book updated successfully");
+                    updateBookResponse.setId(foundbook.getId());
+                    updateBookResponse.setBookTitle(foundbook.getTitle());
+                    updateBookResponse.setBookAuthor(foundbook.getAuthor());
+                    updateBookResponse.setBookIsbn(foundbook.getIsbn());
+                    updateBookResponse.setBookDescription(foundbook.getDescription());
+                }
             }
         }
         return updateBookResponse;
     }
+
 
     @Override
     public ViewBookResponse viewBookByAll(int page, int size) {
@@ -301,7 +305,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public ViewBookResponse viewBookForMembersByAll(int page, int size) {
+    public ViewBookResponse viewBookByAllForMembers(int page, int size) {
         ViewBookResponse viewBookResponse = new ViewBookResponse();
         if (!findMemberSession()){
             throw new EmailNotFoundException("Member email not found");
@@ -378,6 +382,41 @@ public class BookServiceImpl implements BookService {
 
 
     @Override
+    public ViewBookResponse viewBookByTitleForMembers(String title) {
+        ViewBookResponse bookResponse = new ViewBookResponse();
+        if (!findMemberSession()){
+            throw new EmailNotFoundException("Member email not found");
+        }
+        if (findMemberSession() && !findMemberAccessLevel(10)) {
+            throw new NotEligiblePageException("You're not eligible to access this page");
+        }
+        if (findMemberSession() && findMemberAccessLevel(10)) {
+            Shelve shelve = findShelveByBookTitle(title);
+            String bookId = shelve.getBookId();
+
+            Optional<Book> optionalBook = bookRepository.findById(bookId);
+            if (optionalBook.isEmpty()) {
+                throw new BookNotFoundException("Book cannot be found.");
+            }
+
+            Book book = optionalBook.get();
+            bookResponse.setBookTitle(book.getTitle());
+            bookResponse.setBookAuthor(book.getAuthor());
+            bookResponse.setBookIsbn(book.getIsbn());
+            bookResponse.setBookDescription(book.getDescription());
+            bookResponse.setCreationDate(book.getCreationDate());
+
+            bookResponse.setBookCategory(shelve.getCategory());
+            bookResponse.setBookGenre(shelve.getGenre());
+            bookResponse.setAvailable(shelve.isAvailable());
+            bookResponse.setBorrowed(shelve.isBorrowed());
+            return bookResponse;
+        }
+        return bookResponse;
+    }
+
+
+    @Override
     public DeleteBookResponse deleteBookByTitle(String title) {
         DeleteBookResponse deleteBookResponse = new DeleteBookResponse();
         if (!findMemberSession()){
@@ -386,7 +425,7 @@ public class BookServiceImpl implements BookService {
         if (findMemberSession() && !findMemberAccessLevel(20)) {
             throw new NotEligiblePageException("You're not eligible to access this page");
         }
-        if (findMemberSession()) {
+        if (findMemberSession() && findShelveByBookTitleAvailable(title).isAvailable()) {
             Shelve shelve = findShelveByBookTitle(title);
             String bookId = shelve.getBookId();
 

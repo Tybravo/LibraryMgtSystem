@@ -37,18 +37,19 @@ public interface BookService {
 
     void bookCannotBeEmpty(AddBookRequest addEmptyBook);
 
-    UpdateBookResponse updateBookByTitle(UpdateBookRequest updateBookRequest);
+    UpdateBookResponse updateBookByTitle(UpdateBookRequest updateBookRequest, String title);
 
     ViewBookResponse viewBookByAll(int page, int size);
 
-    ViewBookResponse viewBookForMembersByAll(int page, int size);
+    ViewBookResponse viewBookByAllForMembers(int page, int size);
 
     ViewBookResponse viewBookByTitle(String title);
+
+    ViewBookResponse viewBookByTitleForMembers(String title);
 
     DeleteBookResponse deleteBookByTitle(String title);
 
     Shelve findShelveByCategory(ShelveType category);
-
 
 }
 
