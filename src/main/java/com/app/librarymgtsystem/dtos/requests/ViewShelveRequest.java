@@ -13,6 +13,7 @@ public class ViewShelveRequest {
     private String id;
     private String bookId;
     private String bookTitle;
+    private String description;
     private ShelveType bookCategory;
     private String bookGenre;
     private boolean available = true;

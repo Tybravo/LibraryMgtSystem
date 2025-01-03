@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-public class ViewShelveResponse {
+public class UpdateShelveResponse {
     private String id;
     private String bookId;
     private String bookTitle;
@@ -22,4 +22,5 @@ public class ViewShelveResponse {
 
     private List<String> bookIds;
     private List<String> memberIds;
+
 }

@@ -7,13 +7,14 @@ import com.app.librarymgtsystem.data.models.ShelveType;
 import com.app.librarymgtsystem.data.repositories.BookRepository;
 import com.app.librarymgtsystem.data.repositories.MemberRepository;
 import com.app.librarymgtsystem.data.repositories.ShelveRepository;
-import com.app.librarymgtsystem.dtos.responses.ViewBookResponse;
+import com.app.librarymgtsystem.dtos.responses.ViewShelveResponse;
 import com.app.librarymgtsystem.exceptions.EmailNotFoundException;
 import com.app.librarymgtsystem.exceptions.NotEligiblePageException;
 import com.app.librarymgtsystem.exceptions.NotInSessionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -71,6 +72,41 @@ public class ShelveServiceImpl implements ShelveService {
             return shelves;
         }
         return Collections.emptyList();
+    }
+
+
+    @Override
+    public List<ViewShelveResponse> viewShelveByCategoryForMembers(ShelveType category) {
+        if (!findMemberSession()) {
+            throw new EmailNotFoundException("Member email not found");
+        }
+        if (findMemberSession() && !findMemberAccessLevel(10)) {
+            throw new NotEligiblePageException("You're not eligible to access this page");
+        }
+        List<Shelve> shelves = shelveRepository.findByCategory(category);
+        if (shelves.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<ViewShelveResponse> shelveDetailsList = new ArrayList<>();
+
+        for (Shelve shelve : shelves) {
+            if (shelve.getBookId() != null) {
+                Optional<Book> bookOptional = bookRepository.findById(shelve.getBookId());
+                if (bookOptional.isPresent()) {
+                    Book book = bookOptional.get();
+
+                    ViewShelveResponse responseDetail = new ViewShelveResponse();
+                    responseDetail.setBookTitle(book.getTitle());
+                    responseDetail.setBookDescription(book.getDescription());
+                    responseDetail.setBookGenre(shelve.getGenre());
+                    responseDetail.setAvailable(shelve.isAvailable());
+                    responseDetail.setBorrowed(shelve.isBorrowed());
+
+                    shelveDetailsList.add(responseDetail);
+                }
+            }
+        }
+        return shelveDetailsList;
     }
 
 
