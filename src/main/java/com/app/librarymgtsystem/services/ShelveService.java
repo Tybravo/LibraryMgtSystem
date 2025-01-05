@@ -23,4 +23,7 @@ public interface ShelveService {
 
     UpdateShelveResponse setBookAvailableInShelve(UpdateShelveRequest updateShelveRequest, String title);
 
+    UpdateShelveResponse setBookUnavailableInShelve(UpdateShelveRequest updateShelveRequest, String title);
+
+
 }

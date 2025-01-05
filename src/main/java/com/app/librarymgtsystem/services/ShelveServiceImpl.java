@@ -11,6 +11,7 @@ import com.app.librarymgtsystem.dtos.requests.UpdateShelveRequest;
 import com.app.librarymgtsystem.dtos.responses.UpdateShelveResponse;
 import com.app.librarymgtsystem.dtos.responses.ViewShelveResponse;
 import com.app.librarymgtsystem.exceptions.*;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -115,10 +116,13 @@ public class ShelveServiceImpl implements ShelveService {
         return shelveDetailsList;
     }
 
+
     @Override
     public UpdateShelveResponse updateShelveByBookTitle(UpdateShelveRequest updateShelveRequest, String title) {
         UpdateShelveResponse updateShelveResponse = new UpdateShelveResponse();
-
+        if (!findMemberSession()) {
+            throw new EmailNotFoundException("Member email not found");
+        }
         if (findMemberSession() && !findMemberAccessLevel(20)) {
             throw new NotEligiblePageException("You're not eligible to access this page");
         }
@@ -154,10 +158,13 @@ public class ShelveServiceImpl implements ShelveService {
         return updateShelveResponse;
     }
 
+
     @Override
     public UpdateShelveResponse setBookAvailableInShelve(UpdateShelveRequest updateShelveRequest, String title) {
-        UpdateShelveResponse updateShelveResponse = new UpdateShelveResponse();
-
+        UpdateShelveResponse updateBookAvail = new UpdateShelveResponse();
+        if (!findMemberSession()) {
+            throw new EmailNotFoundException("Member email not found");
+        }
         if (findMemberSession() && !findMemberAccessLevel(20)) {
             throw new NotEligiblePageException("You're not eligible to access this page");
         }
@@ -170,17 +177,67 @@ public class ShelveServiceImpl implements ShelveService {
             String book_Id = foundBook.getId();
 
             Optional<Shelve> foundBookId = shelveRepository.findByBookId(book_Id);
-            if (foundBookId.isEmpty()){
+            if (foundBookId.isEmpty()) {
                 throw new BookNotFoundException("Book not found");
             }
             Shelve foundShelve = foundBookId.get();
             String bookId = foundShelve.getBookId();
+            boolean bookAvailable = foundShelve.isAvailable();
 
-            if(bookId.equals(book_Id) && updateShelveRequest.isAvailable()) {
-                throw new BooKAvailabilitySetAlreadyException("The Book is already set to be available")
+            if (bookId.equals(book_Id) && bookAvailable) {
+                throw new BooKAvailabilitySetAlreadyException("Stop! The Book is already set to be available");
             }
-            return null;
+            if (! bookAvailable && bookId.equals(book_Id)) {
+                foundShelve.setAvailable(true);
+                shelveRepository.save(foundShelve);
+
+                updateBookAvail.setUpdateShelveMsg("Yes! Book is now available");
+                updateBookAvail.setAvailable(foundShelve.isAvailable());
+            }
+        }
+            return updateBookAvail;
     }
+
+
+    @Override
+    public UpdateShelveResponse setBookUnavailableInShelve(UpdateShelveRequest updateShelveRequest, String title) {
+        UpdateShelveResponse updateBookUnavail = new UpdateShelveResponse();
+        if (!findMemberSession()) {
+            throw new EmailNotFoundException("Member email not found");
+        }
+        if (findMemberSession() && !findMemberAccessLevel(20)) {
+            throw new NotEligiblePageException("You're not eligible to access this page");
+        }
+        if (findMemberSession() && findMemberAccessLevel(20)) {
+
+            Book foundBook = findBookByTitle(updateShelveRequest.getCurrentBookTitle());
+            if (foundBook == null) {
+                throw new BookNotFoundException("Book with the title '" + updateShelveRequest.getCurrentBookTitle() + "' not found");
+            }
+            String book_Id = foundBook.getId();
+
+            Optional<Shelve> foundBookId = shelveRepository.findByBookId(book_Id);
+            if (foundBookId.isEmpty()) {
+                throw new BookNotFoundException("Book not found");
+            }
+            Shelve foundShelve = foundBookId.get();
+            String bookId = foundShelve.getBookId();
+            boolean bookAvailable = foundShelve.isAvailable();
+
+            if (bookId.equals(book_Id) && ! bookAvailable) {
+                throw new BooKAvailabilitySetAlreadyException("Stop! The Book is already set to be unavailable");
+            }
+            if (bookAvailable && bookId.equals(book_Id)) {
+                foundShelve.setAvailable(false);
+                shelveRepository.save(foundShelve);
+
+                updateBookUnavail.setUpdateShelveMsg("No! Book is not available");
+                updateBookUnavail.setAvailable(foundShelve.isAvailable());
+            }
+        }
+        return updateBookUnavail;
+    }
+
 
 
 }
