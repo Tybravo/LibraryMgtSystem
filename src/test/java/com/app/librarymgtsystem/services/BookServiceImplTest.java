@@ -598,7 +598,7 @@ class BookServiceImplTest {
     }
 
     @Test
-    public void test_That_Librarian_Not_In_Session_Cannot_Update_Book() {
+    public void test_That_Librarian_Not_Inside_Session_Cannot_Update_Book() {
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");

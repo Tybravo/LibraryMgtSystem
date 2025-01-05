@@ -20,6 +20,7 @@ public class UpdateShelveRequest {
     private boolean borrowed = false;
 
     private boolean sessionStatus;
+    private String currentBookTitle;
     private String addShelveMsg;
     private LocalDateTime creationDate = LocalDateTime.now();
 

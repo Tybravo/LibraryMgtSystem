@@ -7,11 +7,11 @@ import java.time.LocalDateTime;
 @Data
 public class UpdateBookRequest {
     private String id;
-    private String currentBookTitle;
     private String bookTitle;
     private String bookAuthor;
     private String bookIsbn;
     private String bookDescription;
+    private String currentBookTitle;
 
     private boolean sessionStatus;
     private int accessLevel;

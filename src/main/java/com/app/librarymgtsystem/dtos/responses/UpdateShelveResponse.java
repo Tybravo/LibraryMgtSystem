@@ -17,7 +17,7 @@ public class UpdateShelveResponse {
     private boolean available = true;
     private boolean borrowed = false;
     private boolean sessionStatus;
-    private String addShelveMsg;
+    private String updateShelveMsg;
     private LocalDateTime creationDate = LocalDateTime.now();
 
     private List<String> bookIds;

@@ -238,24 +238,24 @@ public class BookServiceImpl implements BookService {
         }
         if (findMemberSession() && findMemberAccessLevel(20)) {
 
-            Book foundbook = findBookByTitle(updateBookRequest.getCurrentBookTitle());
-            if (foundbook == null) {
+            Book foundBook = findBookByTitle(updateBookRequest.getCurrentBookTitle());
+            if (foundBook == null) {
                 throw new BookNotFoundException("Book with the title '" + updateBookRequest.getCurrentBookTitle() + "' not found");
             }
             if (updateBookRequest.getBookTitle() != null && updateBookRequest.getBookAuthor() != null && updateBookRequest.getBookIsbn() != null && updateBookRequest.getBookDescription() != null) {
-                foundbook.setTitle(updateBookRequest.getBookTitle());
-                foundbook.setAuthor(updateBookRequest.getBookAuthor());
-                foundbook.setIsbn(updateBookRequest.getBookIsbn());
-                foundbook.setDescription(updateBookRequest.getBookDescription());
+                foundBook.setTitle(updateBookRequest.getBookTitle());
+                foundBook.setAuthor(updateBookRequest.getBookAuthor());
+                foundBook.setIsbn(updateBookRequest.getBookIsbn());
+                foundBook.setDescription(updateBookRequest.getBookDescription());
 
                 if(findShelveByBookTitleAvailable(title).isAvailable()) {
-                    bookRepository.save(foundbook);
+                    bookRepository.save(foundBook);
                     updateBookResponse.setUpdateBookMsg("Book updated successfully");
-                    updateBookResponse.setId(foundbook.getId());
-                    updateBookResponse.setBookTitle(foundbook.getTitle());
-                    updateBookResponse.setBookAuthor(foundbook.getAuthor());
-                    updateBookResponse.setBookIsbn(foundbook.getIsbn());
-                    updateBookResponse.setBookDescription(foundbook.getDescription());
+                    updateBookResponse.setId(foundBook.getId());
+                    updateBookResponse.setBookTitle(foundBook.getTitle());
+                    updateBookResponse.setBookAuthor(foundBook.getAuthor());
+                    updateBookResponse.setBookIsbn(foundBook.getIsbn());
+                    updateBookResponse.setBookDescription(foundBook.getDescription());
                 }
             }
         }
@@ -443,7 +443,7 @@ public class BookServiceImpl implements BookService {
     }
 
 
-    private Shelve findShelveByBookTitle(String title) {
+    public Shelve findShelveByBookTitle(String title) {
         Optional<Book> optionalBook = bookRepository.findByTitleIgnoreCase(title);
         if (optionalBook.isEmpty()) {
             throw new BookNotFoundException("Book with title '" + title + "' cannot be found.");
@@ -457,7 +457,7 @@ public class BookServiceImpl implements BookService {
         return optionalShelve.get();
     }
 
-    private Shelve findShelveByBookTitleAvailable(String title) {
+    public Shelve findShelveByBookTitleAvailable(String title) {
         Optional<Book> optionalBook = bookRepository.findByTitleIgnoreCase(title);
         if (optionalBook.isEmpty()) {
             throw new BookNotFoundException("Book with title '" + title + "' cannot be found.");
