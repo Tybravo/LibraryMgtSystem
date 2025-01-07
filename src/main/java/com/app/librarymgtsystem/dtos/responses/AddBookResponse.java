@@ -1,6 +1,8 @@
 package com.app.librarymgtsystem.dtos.responses;
 
 import lombok.Data;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -11,6 +13,10 @@ public class AddBookResponse {
     private String bookAuthor;
     private String bookIsbn;
     private String bookDescription;
+    private String bookLink;
+    private String bookCurrency;
+    private BigDecimal bookPrice;
+    private int bookQuantity;
 
     private String addBookMsg;
     private LocalDateTime creationDate = LocalDateTime.now();

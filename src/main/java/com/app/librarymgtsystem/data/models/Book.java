@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -15,6 +16,10 @@ public class Book {
     private String author;
     private String isbn;
     private String description;
+    private String link;
+    private String currency;
+    private BigDecimal price;
+    private int quantity;
     private String addBookMsg;
     private LocalDateTime creationDate = LocalDateTime.now();
 }
