@@ -88,7 +88,6 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        loginRequest.setSessionStatus(true);
         Member getResponse = memberService.loginMember(loginRequest);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
@@ -120,7 +119,6 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        loginRequest.setSessionStatus(true);
         Member getResponse = memberService.loginMember(loginRequest);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertTrue(getResponse.isSessionStatus());
@@ -220,7 +218,6 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("twinebravo@gmail.com");
         loginRequest.setPassword("tybravo");
-        loginRequest.setSessionStatus(true);
         Member getResponse = memberService.loginMember(loginRequest);
         assertEquals("twinebravo@gmail.com", getResponse.getEmail());
         assertEquals("tybravo", getResponse.getPassword());
@@ -252,7 +249,6 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        loginRequest.setSessionStatus(true);
         Member getResponse = memberService.loginMember(loginRequest);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertTrue(getResponse.isSessionStatus());
@@ -309,7 +305,7 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest1 = new LoginRequest();
         loginRequest1.setEmail("twinebravo@gmail.com");
         loginRequest1.setPassword("tybravo");
-        loginRequest1.setSessionStatus(true);
+        //loginRequest1.setSessionStatus(true);
         Member getResponse1 = memberService.loginMember(loginRequest1);
         assertEquals("twinebravo@gmail.com", getResponse1.getEmail());
         assertEquals("tybravo", getResponse1.getPassword());
@@ -369,7 +365,6 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        loginRequest.setSessionStatus(true);
         Member getResponse = memberService.loginMember(loginRequest);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
@@ -401,7 +396,6 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        loginRequest.setSessionStatus(true);
         Member getResponse = memberService.loginMember(loginRequest);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
@@ -445,7 +439,6 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        loginRequest.setSessionStatus(true);
         Member getResponse = memberService.loginMember(loginRequest);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
@@ -500,7 +493,6 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        loginRequest.setSessionStatus(true);
         Member getResponse = memberService.loginMember(loginRequest);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
@@ -573,7 +565,6 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        loginRequest.setSessionStatus(true);
         Member getResponse = memberService.loginMember(loginRequest);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
@@ -671,7 +662,6 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        loginRequest.setSessionStatus(true);
         Member getResponse = memberService.loginMember(loginRequest);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
@@ -703,7 +693,6 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        loginRequest.setSessionStatus(true);
         Member getResponse = memberService.loginMember(loginRequest);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
@@ -746,7 +735,6 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        loginRequest.setSessionStatus(true);
         Member getResponse = memberService.loginMember(loginRequest);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
@@ -801,7 +789,6 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        loginRequest.setSessionStatus(true);
         Member getResponse = memberService.loginMember(loginRequest);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
@@ -857,7 +844,6 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        loginRequest.setSessionStatus(true);
         Member getResponse = memberService.loginMember(loginRequest);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
@@ -958,7 +944,6 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        loginRequest.setSessionStatus(true);
         Member getResponse = memberService.loginMember(loginRequest);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
@@ -990,7 +975,6 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        loginRequest.setSessionStatus(true);
         Member getResponse = memberService.loginMember(loginRequest);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
@@ -1033,7 +1017,6 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        loginRequest.setSessionStatus(true);
         Member getResponse = memberService.loginMember(loginRequest);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
@@ -1089,7 +1072,6 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        loginRequest.setSessionStatus(true);
         Member getResponse = memberService.loginMember(loginRequest);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
@@ -1145,7 +1127,6 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        loginRequest.setSessionStatus(true);
         Member getResponse = memberService.loginMember(loginRequest);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());

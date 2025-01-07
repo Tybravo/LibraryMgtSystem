@@ -8,7 +8,6 @@ import com.app.librarymgtsystem.dtos.responses.ViewShelveResponse;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public interface ShelveService {
@@ -24,6 +23,5 @@ public interface ShelveService {
     UpdateShelveResponse setBookAvailableInShelve(UpdateShelveRequest updateShelveRequest, String title);
 
     UpdateShelveResponse setBookUnavailableInShelve(UpdateShelveRequest updateShelveRequest, String title);
-
 
 }

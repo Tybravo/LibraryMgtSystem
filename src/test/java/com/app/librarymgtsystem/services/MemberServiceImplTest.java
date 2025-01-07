@@ -101,7 +101,7 @@ public class MemberServiceImplTest {
 
         LoginRequest getRequest = new LoginRequest();
         getRequest.setEmail("myemail@yahoo.com");
-        getRequest.setSessionStatus(false);
+        //getRequest.setSessionStatus(false);
         LoginEmailException exception = assertThrows(LoginEmailException.class, () ->
                 memberService.loginEmail(getRequest));
         assertEquals("Cannot find email", exception.getMessage());
@@ -122,7 +122,7 @@ public class MemberServiceImplTest {
 
         LoginRequest getRequest = new LoginRequest();
         getRequest.setPassword("bravo");
-        getRequest.setSessionStatus(false);
+        //getRequest.setSessionStatus(false);
         LoginPasswordException exception = assertThrows(LoginPasswordException.class, () ->
                 memberService.loginPassword(getRequest));
         assertEquals("You have entered a wrong password or missing email", exception.getMessage());
@@ -235,7 +235,6 @@ public class MemberServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("twinebravo@gmail.com");
         loginRequest.setPassword("tybravo");
-        loginRequest.setSessionStatus(false);
 
         NotInSessionException exception = assertThrows(NotInSessionException.class, () ->
                 memberService.alreadyInSession(loginRequest));
@@ -258,7 +257,6 @@ public class MemberServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("twinebravo@gmail.com");
         loginRequest.setPassword("tybravo");
-        loginRequest.setSessionStatus(true);
 
         Member getResponse = memberService.loginMember(loginRequest);
         assertEquals("twinebravo@gmail.com", getResponse.getEmail());
@@ -286,7 +284,6 @@ public class MemberServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("twinebravo@gmail.com");
         loginRequest.setPassword("tybravo");
-        loginRequest.setSessionStatus(true);
 
         Member getResponse = memberService.loginMember(loginRequest);
         assertEquals("twinebravo@gmail.com", getResponse.getEmail());
@@ -309,7 +306,6 @@ public class MemberServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("twinebravo@gmail.com");
         loginRequest.setPassword("tybravo");
-        loginRequest.setSessionStatus(true);
 
         Member getResponse = memberService.loginMember(loginRequest);
         assertEquals("twinebravo@gmail.com", getResponse.getEmail());
@@ -333,7 +329,6 @@ public class MemberServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("twinebravo@gmail.com");
         loginRequest.setPassword("tybravo");
-        loginRequest.setSessionStatus(true);
         memberService.loginMember(loginRequest);
 
         LogoutRequest logoutRequest = new LogoutRequest();

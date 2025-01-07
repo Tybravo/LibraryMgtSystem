@@ -1,16 +1,23 @@
 package com.app.librarymgtsystem.dtos.requests;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 @Data
 public class LoginRequest {
-    private String id;
+//    @JsonIgnore
+//    private String id;
+
     private String email;
     private String password;
-    private int accessLevel;
-    private Boolean sessionStatus = false;
-    private String sessionToken;
-    private String sessionEmail;
 
+//    @JsonIgnore
+//    private int accessLevel;
+//    @JsonIgnore
+//    private Boolean sessionStatus = false;
+//    @JsonIgnore
+//    private String sessionToken;
+//    @JsonIgnore
+//    private String sessionEmail;
 
 }

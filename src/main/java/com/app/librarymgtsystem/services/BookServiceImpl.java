@@ -3,7 +3,6 @@ package com.app.librarymgtsystem.services;
 import com.app.librarymgtsystem.data.models.Book;
 import com.app.librarymgtsystem.data.models.Member;
 import com.app.librarymgtsystem.data.models.Shelve;
-import com.app.librarymgtsystem.data.models.ShelveType;
 import com.app.librarymgtsystem.data.repositories.BookRepository;
 import com.app.librarymgtsystem.data.repositories.MemberRepository;
 import com.app.librarymgtsystem.data.repositories.ShelveRepository;
@@ -220,12 +219,6 @@ public class BookServiceImpl implements BookService {
             return Optional.of(addBookRequest);
         }
         return Optional.empty();
-    }
-
-
-    @Override
-    public Shelve findShelveByCategory(ShelveType category) {
-        return null;
     }
 
 

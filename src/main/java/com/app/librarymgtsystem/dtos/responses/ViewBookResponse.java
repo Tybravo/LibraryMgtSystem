@@ -4,6 +4,7 @@ import com.app.librarymgtsystem.data.models.Book;
 import com.app.librarymgtsystem.data.models.ShelveType;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,6 +15,10 @@ public class ViewBookResponse {
     private String bookAuthor;
     private String bookIsbn;
     private String bookDescription;
+    private String bookLink;
+    private String bookCurrency;
+    private BigDecimal bookPrice;
+    private int bookQuantity;
 
     private ShelveType bookCategory;
     private String bookGenre;

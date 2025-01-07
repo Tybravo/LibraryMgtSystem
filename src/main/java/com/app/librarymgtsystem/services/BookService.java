@@ -1,7 +1,6 @@
 package com.app.librarymgtsystem.services;
 
 import com.app.librarymgtsystem.data.models.Book;
-import com.app.librarymgtsystem.data.models.Member;
 import com.app.librarymgtsystem.data.models.Shelve;
 import com.app.librarymgtsystem.data.models.ShelveType;
 import com.app.librarymgtsystem.dtos.responses.*;
@@ -48,8 +47,6 @@ public interface BookService {
     ViewBookResponse viewBookByTitleForMembers(String title);
 
     DeleteBookResponse deleteBookByTitle(String title);
-
-    Shelve findShelveByCategory(ShelveType category);
 
 }
 
