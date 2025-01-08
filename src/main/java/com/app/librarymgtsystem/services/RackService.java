@@ -6,7 +6,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface RackService {
+
+    boolean findMemberSession();
+
+    boolean findMemberAccessLevel(int accessLevel);
+
     AddRackResponse addToRack(AddRackRequest addRackRequest);
 
-    
 }
