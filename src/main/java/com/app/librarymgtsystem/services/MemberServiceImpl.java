@@ -65,14 +65,16 @@ public class MemberServiceImpl implements MemberService {
             member.setPhoneNumber(addMemberRequest.getPhoneNumber());
             member.setAddress(addMemberRequest.getAddress());
             member.setAccessLevel(10);
-            memberRepository.save(member);
+            Member savedMember = memberRepository.save(member);
+
             regResponse.setRegMsg("Registration successful");
-            regResponse.setFullName(addMemberRequest.getFullName());
-            regResponse.setEmail(addMemberRequest.getEmail());
-            regResponse.setPhoneNumber(addMemberRequest.getPhoneNumber());
-            regResponse.setAddress(addMemberRequest.getAddress());
-            regResponse.setAccessLevel(10);
-            regResponse.setCreationDate(addMemberRequest.getCreationDate());
+            regResponse.setId(savedMember.getId());
+            regResponse.setFullName(savedMember.getFullName());
+            regResponse.setEmail(savedMember.getEmail());
+            regResponse.setPhoneNumber(savedMember.getPhoneNumber());
+            regResponse.setAddress(savedMember.getAddress());
+            regResponse.setAccessLevel(savedMember.getAccessLevel());
+            regResponse.setCreationDate(savedMember.getCreationDate());
             regResponse.setSessionStatus(addMemberRequest.isSessionStatus());
         } else {
             emailAlreadyExists(addMemberRequest);

@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Data
 public class AddRackResponse {
-    private int id;
+    private String id;
     private String memberId;
     private String bookId;
     private String rackCurrency;

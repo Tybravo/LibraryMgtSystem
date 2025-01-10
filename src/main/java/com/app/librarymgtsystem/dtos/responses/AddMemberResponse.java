@@ -1,11 +1,14 @@
 package com.app.librarymgtsystem.dtos.responses;
 
 import lombok.Data;
+import org.springframework.data.annotation.Id;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
 public class   AddMemberResponse {
+    private String id;
     private String fullName;
     private String email;
     private String phoneNumber;

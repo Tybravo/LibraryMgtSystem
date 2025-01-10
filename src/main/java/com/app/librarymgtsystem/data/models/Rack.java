@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Document
 public class Rack {
     @Id
-    private int id;
+    private String id;
     private String memberId;
     private String bookId;
     private String currency;

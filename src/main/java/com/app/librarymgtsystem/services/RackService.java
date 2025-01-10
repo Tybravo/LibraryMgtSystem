@@ -11,6 +11,6 @@ public interface RackService {
 
     boolean findMemberAccessLevel(int accessLevel);
 
-    AddRackResponse addToRack(AddRackRequest addRackRequest);
+    AddRackResponse addToRack(AddRackRequest addRackRequest, String title);
 
 }
