@@ -9,12 +9,15 @@ import com.app.librarymgtsystem.dtos.responses.AddMemberResponse;
 import com.app.librarymgtsystem.dtos.responses.LoginResponse;
 import com.app.librarymgtsystem.dtos.responses.LogoutResponse;
 import com.app.librarymgtsystem.exceptions.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 public class MemberServiceImplTest {
@@ -33,8 +36,12 @@ public class MemberServiceImplTest {
 
     @Test
     public void test_That_Registration_Email_Cannot_Be_Empty() {
-        AddMemberRequest request = new AddMemberRequest();
-        request.setEmail(null);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+        
+        AddMemberRequest request1 = new AddMemberRequest();
+        request1.setEmail(null);
         EmailCannotBeEmptyException exception = assertThrows(EmailCannotBeEmptyException.class, () ->
                 memberService.emailCannotBeEmpty(new AddMemberRequest()));
         assertEquals("Registration Fields cannot be empty", exception.getMessage());
@@ -109,6 +116,10 @@ public class MemberServiceImplTest {
 
     @Test
     public void test_That_User_Cannot_Login_With_Wrong_Password() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Ade Bravo");
         addMemberRequest.setEmail("twinebravo@gmail.com");
@@ -124,7 +135,7 @@ public class MemberServiceImplTest {
         getRequest.setPassword("bravo");
         //getRequest.setSessionStatus(false);
         LoginPasswordException exception = assertThrows(LoginPasswordException.class, () ->
-                memberService.loginPassword(getRequest));
+                memberService.loginPassword(getRequest, request));
         assertEquals("You have entered a wrong password or missing email", exception.getMessage());
     }
 
@@ -150,6 +161,10 @@ public class MemberServiceImplTest {
 
     @Test
     public void test_That_User_Can_Login_With_Right_Password() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Ade Bravo");
         addMemberRequest.setEmail("twinebravo@gmail.com");
@@ -166,7 +181,7 @@ public class MemberServiceImplTest {
         loginRequest.setPassword("tybravo");
 
         LoginResponse getResponse1 = memberService.loginEmail(loginRequest);
-        LoginResponse getResponse = memberService.loginPassword(loginRequest);
+        LoginResponse getResponse = memberService.loginPassword(loginRequest, request);
         assertEquals("Email Login successful", getResponse1.getLogMsg());
         assertEquals("Correct password! Member Login successful", getResponse.getLogMsg());
 
@@ -174,6 +189,10 @@ public class MemberServiceImplTest {
 
     @Test
     public void test_That_Login_Email_Password_Cannot_Be_Empty() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+        
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Ade Bravo");
         addMemberRequest.setEmail("twinebravo@gmail.com");
@@ -190,12 +209,16 @@ public class MemberServiceImplTest {
         loginRequest.setPassword(null);
 
         LoginMemberException exception = assertThrows(LoginMemberException.class, () ->
-                memberService.loginMember(loginRequest));
+                memberService.loginMember(loginRequest, (HttpServletRequest) request));
         assertEquals("Email or Password cannot be empty", exception.getMessage());
     }
 
     @Test
     public void test_That_Email_And_Password_Are_Correct() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Ade Bravo");
         addMemberRequest.setEmail("twinebravo@gmail.com");
@@ -211,7 +234,7 @@ public class MemberServiceImplTest {
         loginRequest.setEmail("twinebravo@gmail.com");
         loginRequest.setPassword("tybravo");
 
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest,request);
         assertEquals("twinebravo@gmail.com", getResponse.getEmail());
         assertEquals("tybravo", getResponse.getPassword());
         LoginResponse getResponse2= new LoginResponse();
@@ -243,6 +266,10 @@ public class MemberServiceImplTest {
 
     @Test
     public void test_That_Already_Login_Session_Is_Validated() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Ade Bravo");
         addMemberRequest.setEmail("twinebravo@gmail.com");
@@ -258,7 +285,7 @@ public class MemberServiceImplTest {
         loginRequest.setEmail("twinebravo@gmail.com");
         loginRequest.setPassword("tybravo");
 
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("twinebravo@gmail.com", getResponse.getEmail());
         assertEquals("tybravo", getResponse.getPassword());
 
@@ -270,6 +297,10 @@ public class MemberServiceImplTest {
 
     @Test
     public void test_That_Login_Session_Is_Currently_Running_And_Cannot_Login_Again() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Ade Bravo");
         addMemberRequest.setEmail("twinebravo@gmail.com");
@@ -285,13 +316,17 @@ public class MemberServiceImplTest {
         loginRequest.setEmail("twinebravo@gmail.com");
         loginRequest.setPassword("tybravo");
 
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("twinebravo@gmail.com", getResponse.getEmail());
         assertEquals("tybravo", getResponse.getPassword());
     }
 
     @Test
     public void test_That_Login_Session_With_Email_And_Password_Are_Valid() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Ade Bravo");
         addMemberRequest.setEmail("twinebravo@gmail.com");
@@ -307,7 +342,7 @@ public class MemberServiceImplTest {
         loginRequest.setEmail("twinebravo@gmail.com");
         loginRequest.setPassword("tybravo");
 
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("twinebravo@gmail.com", getResponse.getEmail());
         assertEquals("tybravo", getResponse.getPassword());
         assertTrue(getResponse.isSessionStatus(), String.valueOf(true));
@@ -315,6 +350,11 @@ public class MemberServiceImplTest {
 
     @Test
     public void test_That_Logout_Session_Is_Executed() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
+        when(request.getSession()).thenReturn(session);
+
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Ade Bravo");
         addMemberRequest.setEmail("twinebravo@gmail.com");
@@ -329,15 +369,17 @@ public class MemberServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("twinebravo@gmail.com");
         loginRequest.setPassword("tybravo");
-        memberService.loginMember(loginRequest);
+        Member loggedInMember = memberService.loginMember(loginRequest, request);
 
+        when(session.getAttribute("userEmail")).thenReturn(loggedInMember.getEmail());
         LogoutRequest logoutRequest = new LogoutRequest();
         logoutRequest.setEmail("twinebravo@gmail.com");
         logoutRequest.setSessionStatus(false);
 
-        LogoutResponse getResponse = memberService.logoutMember(logoutRequest);
+        LogoutResponse getResponse = memberService.logoutMember(request);
         assertEquals("twinebravo@gmail.com", getResponse.getEmail());
         assertEquals("Logged out successfully", getResponse.getLogoutMsg());
+        verify(session).invalidate();
     }
 
 }

@@ -10,15 +10,21 @@ import com.app.librarymgtsystem.data.repositories.ShelveRepository;
 import com.app.librarymgtsystem.dtos.requests.*;
 import com.app.librarymgtsystem.dtos.responses.*;
 import com.app.librarymgtsystem.exceptions.*;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 @SpringBootTest
@@ -36,6 +42,8 @@ class ShelveServiceImplTest {
     BookService bookService;
     @Autowired
     MemberService memberService;
+    @Autowired
+    private ServletRequest request;
 
 
     @BeforeEach
@@ -72,6 +80,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_View_Shelve_Of_Books_By_Category_Using_Wrong_Access_Level() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -88,7 +100,7 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -103,6 +115,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Can_View_Shelve_Of_Books_By_Category() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -119,7 +135,7 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertTrue(getResponse.isSessionStatus());
 
@@ -202,6 +218,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_LMember_Inside_Session_Cannot_View_Shelve_Of_Books_By_Category_Using_Wrong_Access_Level_For_Members() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Ade Bravo");
         addMemberRequest.setEmail("twinebravo@gmail.com");
@@ -218,7 +238,7 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("twinebravo@gmail.com");
         loginRequest.setPassword("tybravo");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("twinebravo@gmail.com", getResponse.getEmail());
         assertEquals("tybravo", getResponse.getPassword());
 
@@ -233,6 +253,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_Member_Inside_Session_Can_View_Shelve_Of_Books_By_Category_For_Members() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -249,7 +273,7 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertTrue(getResponse.isSessionStatus());
 
@@ -306,7 +330,7 @@ class ShelveServiceImplTest {
         loginRequest1.setEmail("twinebravo@gmail.com");
         loginRequest1.setPassword("tybravo");
         //loginRequest1.setSessionStatus(true);
-        Member getResponse1 = memberService.loginMember(loginRequest1);
+        Member getResponse1 = memberService.loginMember(loginRequest1, request);
         assertEquals("twinebravo@gmail.com", getResponse1.getEmail());
         assertEquals("tybravo", getResponse1.getPassword());
 
@@ -349,6 +373,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_Update_Shelve_Of_Books_Using_Wrong_Access_Level() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -365,7 +393,7 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -380,6 +408,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_Update_Shelve_Of_Books_If_Input_Book_Title_Not_found(){
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -396,7 +428,7 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -423,6 +455,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_Update_Shelve_Of_Books_If_BookId_Not_found(){
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -439,7 +475,7 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -477,6 +513,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_Update_Shelve_Of_Books_By_Book_Title_If_Is_Not_Available() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -493,7 +533,7 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -549,6 +589,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Can_Update_Shelve_Of_Books_By_Book_Title_If_Is_Available() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -565,7 +609,7 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -646,6 +690,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_Set_Book_Inside_Shelve_To_Be_Available_Using_Wrong_Access_Level() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -662,7 +710,7 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -677,6 +725,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_Set_Book_Inside_Shelve_To_Be_Available_If_Input_Book_Title_Not_found(){
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -693,7 +745,7 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -719,6 +771,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_Set_Book_Inside_Shelve_To_Be_Available_If_BookId_Not_found(){
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -735,7 +791,7 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -773,6 +829,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_Set_Book_Inside_Shelve_To_Be_Available_If_Is_Already_Available() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -789,7 +849,7 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -828,6 +888,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Can_Set_Book_Inside_Shelve_To_Be_Available() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -844,7 +908,7 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -928,6 +992,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_Set_Book_Inside_Shelve_To_Be_UnAvailable_Using_Wrong_Access_Level() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -944,7 +1012,7 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -959,6 +1027,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_Set_Book_Inside_Shelve_To_Be_Unavailable_If_Input_Book_Title_Not_found(){
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -975,7 +1047,7 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -1001,6 +1073,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_Set_Book_Inside_Shelve_To_Be_Unavailable_If_BookId_Not_found(){
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -1017,7 +1093,7 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -1056,6 +1132,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void  test_That_Librarian_Inside_Session_Cannot_Set_Book_Inside_Shelve_To_Be_Unavailable_If_Is_Already_Unavailable() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -1072,7 +1152,7 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -1111,6 +1191,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Can_Set_Book_Inside_Shelve_To_Be_Unavailable() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -1127,7 +1211,7 @@ class ShelveServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 

@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface RackRepository  extends MongoRepository<Rack, String> {
 
+    Rack findByAuthorize(boolean authorize);
 }

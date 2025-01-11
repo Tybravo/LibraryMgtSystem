@@ -10,6 +10,8 @@ import com.app.librarymgtsystem.data.repositories.ShelveRepository;
 import com.app.librarymgtsystem.dtos.requests.*;
 import com.app.librarymgtsystem.dtos.responses.*;
 import com.app.librarymgtsystem.exceptions.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 
 @SpringBootTest
@@ -44,6 +47,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Empty_Session_Email_Cannot_Get_Member_Into_Session() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Ade Bravo");
         addMemberRequest.setEmail("twinebravo@gmail.com");
@@ -163,6 +170,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Title_Author_ISBN_Of_Book_Cannot_Be_Empty(){
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -179,7 +190,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
 
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
@@ -209,6 +220,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Member_Inside_Session_Cannot_Add_Book_Using_Wrong_Access_Level() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Ade Bravo");
         addMemberRequest.setEmail("twinebravo@gmail.com");
@@ -223,7 +238,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("twinebravo@gmail.com");
         loginRequest.setPassword("tybravo");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("twinebravo@gmail.com", getResponse.getEmail());
         assertEquals("tybravo", getResponse.getPassword());
 
@@ -238,6 +253,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Member_Inside_Session_Cannot_Add_Book_With_Shelve_Using_Wrong_Access_Level() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -252,7 +271,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -269,6 +288,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Can_Add_Book_Using_Right_Access_Level() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -285,7 +308,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -304,6 +327,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Librarian_Cannot_Add_Book_With_Same_Book_Title_And_Author(){
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -320,7 +347,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -348,6 +375,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Librarian_Cannot_Add_Book_With_Same_ISBN(){
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -364,7 +395,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -388,6 +419,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Book_Can_Be_Found_By_Id() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -404,7 +439,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -428,6 +463,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Book_Id_And_FICTION_Category_Can_Be_Saved_Into_Book_Shelve_Using_addBook_method() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -444,7 +483,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -483,6 +522,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Book_Id_And_POETRY_Category_Can_Be_Saved_Into_Shelve(){
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -499,7 +542,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -538,6 +581,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Book_Id_And_EDUCATION_Category_Can_Be_Saved_Into_Book_Shelve_Using_addBookWithShelve_method() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member member = new Member();
         member.setFullName("Librarian Learned");
         member.setEmail("durayg2000@yahoo.com");
@@ -554,7 +601,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -613,6 +660,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_Update_Book_Using_Wrong_Access_Level() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -629,7 +680,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -645,6 +696,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_Update_Book_If_Input_Book_Title_Not_found(){
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -661,7 +716,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -692,6 +747,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Can_Add_Book_Again_Using_Right_Access_Level() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -708,7 +767,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -727,6 +786,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_Update_Book_By_Book_Title_If_Is_Not_Available() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -743,7 +806,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -803,6 +866,10 @@ class BookServiceImplTest {
 
         @Test
     public void test_That_Librarian_Inside_Session_Can_Update_Book_By_Book_Title_If_Is_Available() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -819,7 +886,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -923,6 +990,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_View_All_Books_For_Librarian_Using_Wrong_Access_Level() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -939,7 +1010,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -954,6 +1025,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Member_Inside_Session_Cannot_View_All_Books_For_Member_Using_Wrong_Access_Level() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Ade Bravo");
         addMemberRequest.setEmail("twinebravo@gmail.com");
@@ -970,7 +1045,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("twinebravo@gmail.com");
         loginRequest.setPassword("tybravo");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("twinebravo@gmail.com", getResponse.getEmail());
         assertEquals("tybravo", getResponse.getPassword());
 
@@ -985,6 +1060,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_View_All_Book_For_Librarian_Inside_Empty_Book_Repo(){
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -1001,7 +1080,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -1014,6 +1093,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Member_Inside_Session_Cannot_View_All_Book_For_Member_Inside_Empty_Book_Repo(){
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Ade Bravo");
         addMemberRequest.setEmail("twinebravo@gmail.com");
@@ -1030,7 +1113,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("twinebravo@gmail.com");
         loginRequest.setPassword("tybravo");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("twinebravo@gmail.com", getResponse.getEmail());
         assertEquals("tybravo", getResponse.getPassword());
 
@@ -1043,6 +1126,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Can_View_All_Books_For_Librarian() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -1056,7 +1143,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
         assertTrue(getResponse.isSessionStatus());
@@ -1095,6 +1182,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Member_Inside_Session_Can_View_All_Books_For_Member() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -1108,7 +1199,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
         assertTrue(getResponse.isSessionStatus());
@@ -1143,7 +1234,7 @@ class BookServiceImplTest {
         loginRequest1.setEmail("twinebravo@gmail.com");
         loginRequest1.setPassword("tybravo");
         //loginRequest1.setSessionStatus(true);
-        Member getResponse1 = memberService.loginMember(loginRequest1);
+        Member getResponse1 = memberService.loginMember(loginRequest1, (HttpServletRequest) request);
         assertEquals("twinebravo@gmail.com", getResponse1.getEmail());
         assertEquals("tybravo", getResponse1.getPassword());
 
@@ -1214,6 +1305,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_View_Book_By_Title_Using_Wrong_Access_Level() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -1230,7 +1325,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -1245,6 +1340,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Member_Inside_Session_Cannot_View_Book_By_Title_Using_Wrong_Access_Level_For_Member() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Ade Bravo");
         addMemberRequest.setEmail("twinebravo@gmail.com");
@@ -1261,7 +1360,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("twinebravo@gmail.com");
         loginRequest.setPassword("tybravo");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("twinebravo@gmail.com", getResponse.getEmail());
         assertEquals("tybravo", getResponse.getPassword());
 
@@ -1276,6 +1375,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_View_Non_Existing_Book_By_Title_Inside_Book_Repo(){
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -1292,7 +1395,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -1314,6 +1417,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Member_Inside_Session_Cannot_View_Non_Existing_Book_By_Title_Inside_Book_Repo_For_Members(){
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -1330,7 +1437,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -1361,7 +1468,7 @@ class BookServiceImplTest {
         loginRequest1.setEmail("twinebravo@gmail.com");
         loginRequest1.setPassword("tybravo");
         //loginRequest1.setSessionStatus(true);
-        Member getResponse1 = memberService.loginMember(loginRequest1);
+        Member getResponse1 = memberService.loginMember(loginRequest1, (HttpServletRequest) request);
         assertEquals("twinebravo@gmail.com", getResponse1.getEmail());
         assertEquals("tybravo", getResponse1.getPassword());
 
@@ -1373,6 +1480,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_Find_BookId_Inside_Shelve_Repository(){
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -1389,7 +1500,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -1420,6 +1531,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Can_View_Book_By_Title() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -1436,7 +1551,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -1473,6 +1588,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Member_Inside_Session_Can_View_Book_By_Title_For_Members() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -1489,7 +1608,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -1528,7 +1647,7 @@ class BookServiceImplTest {
         loginRequest1.setEmail("twinebravo@gmail.com");
         loginRequest1.setPassword("tybravo");
         //loginRequest1.setSessionStatus(true);
-        Member getResponse1 = memberService.loginMember(loginRequest1);
+        Member getResponse1 = memberService.loginMember(loginRequest1, (HttpServletRequest) request);
         assertEquals("twinebravo@gmail.com", getResponse1.getEmail());
         assertEquals("tybravo", getResponse1.getPassword());
 
@@ -1569,6 +1688,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_Delete_Book_By_Title_Using_Wrong_Access_Level() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -1585,7 +1708,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -1600,6 +1723,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_Delete_Non_Existing_Book_By_Title_Inside_Book_Repo(){
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -1616,7 +1743,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -1638,6 +1765,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Cannot_Delete_Book_By_Title_If_Is_Not_Set_Available() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -1654,7 +1785,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
@@ -1703,6 +1834,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Librarian_Inside_Session_Can_Delete_Book_By_Title_If_Is_Set_Available() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -1719,7 +1854,7 @@ class BookServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 

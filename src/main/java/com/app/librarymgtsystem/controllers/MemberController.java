@@ -5,8 +5,10 @@ import com.app.librarymgtsystem.dtos.requests.LoginRequest;
 import com.app.librarymgtsystem.dtos.requests.LogoutRequest;
 import com.app.librarymgtsystem.dtos.responses.AddMemberResponse;
 import com.app.librarymgtsystem.exceptions.*;
-import com.app.librarymgtsystem.exceptions.*;
 import com.app.librarymgtsystem.services.MemberService;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -18,6 +20,8 @@ public class MemberController {
 
     @Autowired
     private MemberService memberService;
+    @Autowired
+    private ServletRequest request;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody AddMemberRequest addMemberRequest) {
@@ -46,10 +50,10 @@ public class MemberController {
     }
 
     @PostMapping("/login-password")
-    public ResponseEntity<?> loginMyPassword(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> loginMyPassword(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
         try {
-            memberService.loginPassword(loginRequest);
-            return ResponseEntity.ok(memberService.loginPassword(loginRequest));
+            memberService.loginPassword(loginRequest, request);
+            return ResponseEntity.ok(memberService.loginPassword(loginRequest, request));
         } catch (LoginPasswordException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
@@ -70,10 +74,10 @@ public class MemberController {
     }
 
     @PostMapping("/login-member")
-    public ResponseEntity<?> loginMember(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> loginMember(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
         try {
-            memberService.loginMember(loginRequest);
-            return ResponseEntity.ok(memberService.loginMember(loginRequest));
+            memberService.loginMember(loginRequest, request);
+            return ResponseEntity.ok(memberService.loginMember(loginRequest, request));
         } catch (LoginMemberException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
@@ -82,11 +86,18 @@ public class MemberController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logoutMember(@RequestBody LogoutRequest logoutRequest) {
+    public ResponseEntity<?> logoutMember(HttpServletRequest request) {
         try {
-            memberService.logoutMember(logoutRequest);
+            HttpSession session = request.getSession(false);
+            if (session == null || session.getAttribute("userEmail") == null) {
+                return ResponseEntity.badRequest().body("No active session found for the user.");
+            }
+            LogoutRequest logoutRequest = new LogoutRequest();
+            logoutRequest.setEmail((String) session.getAttribute("userEmail"));
+            memberService.logoutMember(request);
+
             return ResponseEntity.ok("Logout successful!");
-            } catch (LogoutMemberException e) {
+        } catch (LogoutMemberException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("An unexpected error occurred");

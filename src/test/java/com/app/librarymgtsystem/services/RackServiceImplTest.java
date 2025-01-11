@@ -13,6 +13,8 @@ import com.app.librarymgtsystem.dtos.responses.AddRackResponse;
 import com.app.librarymgtsystem.exceptions.BookInShelveNotAvailableException;
 import com.app.librarymgtsystem.exceptions.BookNotFoundException;
 import com.app.librarymgtsystem.exceptions.NotInSessionException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,7 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 class RackServiceImplTest {
@@ -54,15 +57,15 @@ class RackServiceImplTest {
 
     @Test
     public void test_That_Member_Not_In_Session_Cannot_Add_Book_To_Rack() {
-        Member addMemberRequest2 = new Member();
-        addMemberRequest2.setFullName("Michael Bravo");
-        addMemberRequest2.setEmail("michaelbravo@gmail.com");
-        addMemberRequest2.setPassword("consistency");
-        addMemberRequest2.setPhoneNumber("08027663871");
-        addMemberRequest2.setAddress("No. 34, Sabo, Yaba, Lagos.");
-        addMemberRequest2.setAccessLevel(10);
-        addMemberRequest2.setSessionStatus(false);
-        memberRepository.save(addMemberRequest2);
+        Member addMemberRequest= new Member();
+        addMemberRequest.setFullName("Michael Bravo");
+        addMemberRequest.setEmail("michaelbravo@gmail.com");
+        addMemberRequest.setPassword("consistency");
+        addMemberRequest.setPhoneNumber("08027663871");
+        addMemberRequest.setAddress("No. 34, Sabo, Yaba, Lagos.");
+        addMemberRequest.setAccessLevel(10);
+        addMemberRequest.setSessionStatus(false);
+        memberRepository.save(addMemberRequest);
         AddMemberResponse response2 = new AddMemberResponse();
         response2.setRegMsg("Registration successful");
         assertEquals("Registration successful", response2.getRegMsg());
@@ -70,14 +73,19 @@ class RackServiceImplTest {
         AddRackRequest addRackRequest = new AddRackRequest();
         addRackRequest.setSessionStatus(false);
         String title = "Be Intentional A";
+        String sessionEmail = addMemberRequest.getEmail();
 
         NotInSessionException exception = assertThrows(NotInSessionException.class, () ->
-                rackService.addToRack(addRackRequest, title));
+                rackService.addToRack(addRackRequest, title, sessionEmail));
         assertEquals("Not in session or currently logged out!", exception.getMessage());
     }
 
     @Test
     public void test_That_Member_Inside_Session_Cannot_Add_Book_To_Rack_If_Picked_Book_Title_Not_found(){
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Michael Bravo");
         addMemberRequest.setEmail("michaelbravo@gmail.com");
@@ -93,9 +101,11 @@ class RackServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("michaelbravo@gmail.com");
         loginRequest.setPassword("consistency");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("michaelbravo@gmail.com", getResponse.getEmail());
         assertEquals("consistency", getResponse.getPassword());
+
+        when(session.getAttribute("userEmail")).thenReturn(getResponse.getEmail());
 
         Member addMemberRequest1 = new Member();
         addMemberRequest1.setFullName("Librarian Learned");
@@ -113,9 +123,11 @@ class RackServiceImplTest {
         LoginRequest loginRequest1 = new LoginRequest();
         loginRequest1.setEmail("durayg2000@yahoo.com");
         loginRequest1.setPassword("greatness");
-        Member getResponse1 = memberService.loginMember(loginRequest1);
+        Member getResponse1 = memberService.loginMember(loginRequest1, request);
         assertEquals("durayg2000@yahoo.com", getResponse1.getEmail());
         assertEquals("greatness", getResponse1.getPassword());
+
+        when(session.getAttribute("userEmail")).thenReturn(getResponse1.getEmail());
 
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional G");
@@ -138,32 +150,18 @@ class RackServiceImplTest {
         addRackRequest.setRackAmount(BigDecimal.valueOf(562_827_261_2873_184_045L) );
         addRackRequest.setSessionStatus(true);
         String title = updateBookRequest.getCurrentBookTitle();
+        String sessionEmail = getResponse.getEmail();
 
         BookNotFoundException exception = assertThrows(BookNotFoundException.class, () ->
-                rackService.addToRack(addRackRequest, title));
+                rackService.addToRack(addRackRequest, title, sessionEmail));
         assertEquals("Book with title '" +title + "' cannot be found.", exception.getMessage());
     }
 
     @Test
     public void test_That_Member_Inside_Session_Cannot_Add_Book_To_Rack_If_Is_Not_Available() {
-        AddMemberRequest addMemberRequest = new AddMemberRequest();
-        addMemberRequest.setFullName("Michael Bravo");
-        addMemberRequest.setEmail("michaelbravo@gmail.com");
-        addMemberRequest.setPassword("consistency");
-        addMemberRequest.setPhoneNumber("08027663871");
-        addMemberRequest.setAddress("No. 34, Sabo, Yaba, Lagos.");
-        addMemberRequest.setAccessLevel(10);
-        addMemberRequest.setSessionStatus(false);
-
-        AddMemberResponse savedMemberResponse = memberService.registerMember(addMemberRequest);
-        assertEquals("Registration successful", savedMemberResponse.getRegMsg());
-
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setEmail("michaelbravo@gmail.com");
-        loginRequest.setPassword("consistency");
-        Member getResponse = memberService.loginMember(loginRequest);
-        assertEquals("michaelbravo@gmail.com", getResponse.getEmail());
-        assertEquals("consistency", getResponse.getPassword());
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest1 = new Member();
         addMemberRequest1.setFullName("Librarian Learned");
@@ -181,7 +179,7 @@ class RackServiceImplTest {
         LoginRequest loginRequest1 = new LoginRequest();
         loginRequest1.setEmail("durayg2000@yahoo.com");
         loginRequest1.setPassword("greatness");
-        Member getResponse1 = memberService.loginMember(loginRequest1);
+        Member getResponse1 = memberService.loginMember(loginRequest1, request);
         assertEquals("durayg2000@yahoo.com", getResponse1.getEmail());
         assertEquals("greatness", getResponse1.getPassword());
 
@@ -224,22 +222,6 @@ class RackServiceImplTest {
         assertFalse(keepShelve.get().isAvailable());
         assertFalse(keepShelve.get().isBorrowed());
 
-        AddRackRequest addRackRequest = new AddRackRequest();
-        addRackRequest.setCurrentBookTitle(("Be Intentional GG"));
-        addRackRequest.setMemberId(savedMemberResponse.getId());
-        addRackRequest.setBookId(addBookResponse.getId());
-        addRackRequest.setRackChoice(RackChoice.PURCHASE);
-        addRackRequest.setRackAmount(BigDecimal.valueOf(562_827_261_2873_184_045L) );
-        addRackRequest.setSessionStatus(true);
-        String title = addRackRequest.getCurrentBookTitle();
-
-        BookInShelveNotAvailableException exception = assertThrows(BookInShelveNotAvailableException.class, () ->
-                rackService.addToRack(addRackRequest, title));
-        assertEquals("Book is currently not available in the shelve", exception.getMessage());
-    }
-
-    @Test
-    public void test_That_Member_Inside_Session_Can_Add_Book_To_Rack_If_Is_Available() {
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Michael Bravo");
         addMemberRequest.setEmail("michaelbravo@gmail.com");
@@ -251,15 +233,36 @@ class RackServiceImplTest {
 
         AddMemberResponse savedMemberResponse = memberService.registerMember(addMemberRequest);
         assertEquals("Registration successful", savedMemberResponse.getRegMsg());
-        System.out.println(savedMemberResponse.getId());
-        assertNotNull(savedMemberResponse.getId());
 
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("michaelbravo@gmail.com");
         loginRequest.setPassword("consistency");
-        Member getResponse = memberService.loginMember(loginRequest);
+        Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("michaelbravo@gmail.com", getResponse.getEmail());
         assertEquals("consistency", getResponse.getPassword());
+
+        when(session.getAttribute("userEmail")).thenReturn(getResponse.getEmail());
+
+        AddRackRequest addRackRequest = new AddRackRequest();
+        addRackRequest.setCurrentBookTitle(("Be Intentional GG"));
+        addRackRequest.setMemberId(savedMemberResponse.getId());
+        addRackRequest.setBookId(addBookResponse.getId());
+        addRackRequest.setRackChoice(RackChoice.PURCHASE);
+        addRackRequest.setRackAmount(BigDecimal.valueOf(562_827_261_2873_184_045L) );
+        addRackRequest.setSessionStatus(true);
+        String title = addRackRequest.getCurrentBookTitle();
+        String sessionEmail = getResponse.getEmail();
+
+        BookInShelveNotAvailableException exception = assertThrows(BookInShelveNotAvailableException.class, () ->
+                rackService.addToRack(addRackRequest, title, sessionEmail));
+        assertEquals("Book is currently not available in the shelve", exception.getMessage());
+    }
+
+    @Test
+    public void test_That_Member_Inside_Session_Can_Add_Book_To_Rack_If_Is_Available() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest1 = new Member();
         addMemberRequest1.setFullName("Librarian Learned");
@@ -277,7 +280,7 @@ class RackServiceImplTest {
         LoginRequest loginRequest1 = new LoginRequest();
         loginRequest1.setEmail("durayg2000@yahoo.com");
         loginRequest1.setPassword("greatness");
-        Member getResponse1 = memberService.loginMember(loginRequest1);
+        Member getResponse1 = memberService.loginMember(loginRequest1, (HttpServletRequest) request);
         assertEquals("durayg2000@yahoo.com", getResponse1.getEmail());
         assertEquals("greatness", getResponse1.getPassword());
 
@@ -320,6 +323,29 @@ class RackServiceImplTest {
         assertTrue(keepShelve.get().isAvailable());
         assertFalse(keepShelve.get().isBorrowed());
 
+        AddMemberRequest addMemberRequest = new AddMemberRequest();
+        addMemberRequest.setFullName("Michael Bravo");
+        addMemberRequest.setEmail("michaelbravo@gmail.com");
+        addMemberRequest.setPassword("consistency");
+        addMemberRequest.setPhoneNumber("08027663871");
+        addMemberRequest.setAddress("No. 34, Sabo, Yaba, Lagos.");
+        addMemberRequest.setAccessLevel(10);
+        addMemberRequest.setSessionStatus(false);
+
+        AddMemberResponse savedMemberResponse = memberService.registerMember(addMemberRequest);
+        assertEquals("Registration successful", savedMemberResponse.getRegMsg());
+        System.out.println(savedMemberResponse.getId());
+        assertNotNull(savedMemberResponse.getId());
+
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail("michaelbravo@gmail.com");
+        loginRequest.setPassword("consistency");
+        Member getResponse = memberService.loginMember(loginRequest, request);
+        assertEquals("michaelbravo@gmail.com", getResponse.getEmail());
+        assertEquals("consistency", getResponse.getPassword());
+
+        when(session.getAttribute("userEmail")).thenReturn(getResponse.getEmail());
+
         AddRackRequest addRackRequest = new AddRackRequest();
         addRackRequest.setCurrentBookTitle(("Be Intentional GG"));
         addRackRequest.setMemberId(savedMemberResponse.getId());
@@ -329,8 +355,9 @@ class RackServiceImplTest {
         addRackRequest.setRackAmount(BigDecimal.valueOf(562_827_261_2873_184_045L) );
         addRackRequest.setSessionStatus(true);
         String title = addRackRequest.getCurrentBookTitle();
+        String sessionEmail = getResponse.getEmail();
 
-        AddRackResponse addedRack = rackService.addToRack(addRackRequest, title);
+        AddRackResponse addedRack = rackService.addToRack(addRackRequest, title, sessionEmail);
         assertEquals(addedRack.getAddRackMsg(), "Book is added to rack successfully");
         System.out.println(addedRack.getBookId());
         System.out.println(addBookResponse.getId());

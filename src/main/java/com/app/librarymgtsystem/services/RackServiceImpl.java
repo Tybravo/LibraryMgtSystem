@@ -9,8 +9,12 @@ import com.app.librarymgtsystem.data.repositories.MemberRepository;
 import com.app.librarymgtsystem.data.repositories.RackRepository;
 import com.app.librarymgtsystem.data.repositories.ShelveRepository;
 import com.app.librarymgtsystem.dtos.requests.AddRackRequest;
+import com.app.librarymgtsystem.dtos.requests.ViewBookRequest;
 import com.app.librarymgtsystem.dtos.responses.AddRackResponse;
+import com.app.librarymgtsystem.dtos.responses.ViewRackResponse;
 import com.app.librarymgtsystem.exceptions.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +33,14 @@ public class RackServiceImpl implements RackService {
     private ShelveRepository shelveRepository;
 
 
+    @Override
+    public String getSessionEmail(HttpServletRequest request) {
+        HttpSession session = request.getSession(false); // Get existing session, do not create a new one
+        if (session == null || session.getAttribute("userEmail") == null) {
+            throw new NotInSessionException("No active session or session expired");
+        }
+        return (String) session.getAttribute("userEmail");
+    }
 
     @Override
     public boolean findMemberSession() {
@@ -53,9 +65,19 @@ public class RackServiceImpl implements RackService {
         return memberRepository.findByAccessLevel(accessLevel) != null;
     }
 
+    @Override
+    public boolean findMemberAuthorize() {
+//        String sessionEmail = MemberServiceImpl.LoggedInUserContext.getSessionEmail();
+//        System.out.println("Session Email Retrieved: " + sessionEmail);
+//        Optional<Member> optionalMember = memberRepository.findBySessionEmail(sessionEmail);
+//        return optionalMember.isPresent() && optionalMember.get().isAuthorized();
+        return false;
+    }
+
+
 
     @Override
-    public AddRackResponse addToRack(AddRackRequest addRackRequest, String title) {
+    public AddRackResponse addToRack(AddRackRequest addRackRequest, String title, String sessionEmail) {
         AddRackResponse addRackResponse = new AddRackResponse();
         if (!findMemberSession()) {
             throw new NotInSessionException("Not in session or currently logged out!");
@@ -64,7 +86,6 @@ public class RackServiceImpl implements RackService {
            findShelveByBookTitle(title);
            findShelveByBookTitleAvailable(title);
 
-           String sessionEmail = MemberServiceImpl.LoggedInUserContext.getSessionEmail();
            Optional<Member> optionalMemberId = memberRepository.findBySessionEmail(sessionEmail);
            if (optionalMemberId.isPresent()) {
                Optional<Member> optionalMember = memberRepository.findById(optionalMemberId.get().getId());
@@ -90,6 +111,11 @@ public class RackServiceImpl implements RackService {
            }
         }
         return addRackResponse;
+    }
+
+    @Override
+    public ViewRackResponse viewRack(ViewBookRequest viewBookRequest) {
+        return null;
     }
 
 

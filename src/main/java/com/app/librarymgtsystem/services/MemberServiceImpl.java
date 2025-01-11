@@ -9,6 +9,8 @@ import com.app.librarymgtsystem.dtos.responses.AddMemberResponse;
 import com.app.librarymgtsystem.dtos.responses.LoginResponse;
 import com.app.librarymgtsystem.dtos.responses.LogoutResponse;
 import com.app.librarymgtsystem.exceptions.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -99,7 +101,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public LoginResponse loginPassword(LoginRequest loginRequest) {
+    public LoginResponse loginPassword(LoginRequest loginRequest, HttpServletRequest request) {
         String sessionToken = UUID.randomUUID().toString();
             Member foundMemberPassword = findMemberByEmail(loginRequest.getEmail());
             if (foundMemberPassword != null && (foundMemberPassword.getPassword().equals(loginRequest.getPassword()))) {
@@ -107,8 +109,11 @@ public class MemberServiceImpl implements MemberService {
                 foundMemberPassword.setSessionToken(sessionToken);
                 foundMemberPassword.setSessionEmail(foundMemberPassword.getEmail());
                 memberRepository.save(foundMemberPassword);
+
                 LoggedInUserContext.setSessionToken(sessionToken);
                 LoggedInUserContext.setSessionEmail(foundMemberPassword.getEmail());
+                HttpSession session = request.getSession();
+                session.setAttribute("userEmail", foundMemberPassword.getEmail());
 
                 LoginResponse regResponse = new LoginResponse();
                 regResponse.setId(foundMemberPassword.getId());
@@ -143,11 +148,11 @@ public class MemberServiceImpl implements MemberService {
 
 
     @Override
-    public Member loginMember(LoginRequest loginRequest) {
+    public Member loginMember(LoginRequest loginRequest, HttpServletRequest request) {
         String sessionToken = UUID.randomUUID().toString();
         Member foundMember = findMemberByEmail(loginRequest.getEmail());
 
-        if(loginRequest.getEmail() == null || loginRequest.getEmail().isEmpty() ||
+        if (loginRequest.getEmail() == null || loginRequest.getEmail().isEmpty() ||
                 loginRequest.getPassword() == null || loginRequest.getPassword().isEmpty()) {
             throw new LoginMemberException("Email or Password cannot be empty");
         }
@@ -157,8 +162,11 @@ public class MemberServiceImpl implements MemberService {
             foundMember.setSessionToken(sessionToken);
             foundMember.setSessionEmail(foundMember.getEmail());
             memberRepository.save(foundMember);
+
             LoggedInUserContext.setSessionToken(sessionToken);
             LoggedInUserContext.setSessionEmail(foundMember.getEmail());
+            HttpSession session = request.getSession();
+            session.setAttribute("userEmail", foundMember.getEmail());
             foundMember.setId(foundMember.getId());
             foundMember.setLogMsg("Member Login successful");
             return foundMember;
@@ -168,22 +176,29 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public LogoutResponse logoutMember(LogoutRequest logoutRequest) {
+    public LogoutResponse logoutMember(HttpServletRequest request) {
         try {
-            Member foundMember = findMemberByEmail(logoutRequest.getEmail());
-            if (foundMember != null) {
-                if (!foundMember.isSessionStatus()) {
-                    throw new LogoutMemberException("You are currently out of session");
-                }
-                foundMember.setSessionStatus(false);
-                memberRepository.save(foundMember);
-                LogoutResponse outSession = new LogoutResponse();
-                outSession.setEmail(logoutRequest.getEmail());
-                outSession.setLogoutMsg("Logged out successfully");
-                return outSession;
-            } else {
+            HttpSession session = request.getSession(false);
+            if (session == null || session.getAttribute("userEmail") == null) {
+                throw new LogoutMemberException("No active session found for the user");
+            }
+            String sessionEmail = (String) session.getAttribute("userEmail");
+            Member foundMember = findMemberByEmail(sessionEmail);
+            if (foundMember == null) {
                 throw new LogoutMemberException("Member does not exist");
             }
+            if (!foundMember.isSessionStatus()) {
+                throw new LogoutMemberException("You are currently out of session");
+            }
+            foundMember.setSessionStatus(false);
+            memberRepository.save(foundMember);
+
+            session.invalidate();
+
+            LogoutResponse outSession = new LogoutResponse();
+            outSession.setEmail(sessionEmail);
+            outSession.setLogoutMsg("Logged out successfully");
+            return outSession;
         } finally {
             LoggedInUserContext.clear();
         }
