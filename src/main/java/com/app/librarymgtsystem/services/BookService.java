@@ -20,7 +20,7 @@ public interface BookService {
 
     AddBookResponse addBookWithShelve(AddBookRequest addBookRequest, AddShelveRequest addShelveRequest);
 
-    Optional<AddBookRequest> findBookById(String findBook);
+    Optional<AddBookRequest> findBookById(String title);
 
     AddShelveResponse addShelveWithBookId(AddShelveRequest addShelveRequest);
 

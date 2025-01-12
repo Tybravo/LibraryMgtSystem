@@ -1,6 +1,7 @@
 package com.app.librarymgtsystem.services;
 
 import com.app.librarymgtsystem.dtos.requests.AddRackRequest;
+import com.app.librarymgtsystem.dtos.requests.UpdateRackRequest;
 import com.app.librarymgtsystem.dtos.requests.ViewBookRequest;
 import com.app.librarymgtsystem.dtos.responses.AddRackResponse;
 import com.app.librarymgtsystem.dtos.responses.ViewRackResponse;
@@ -12,14 +13,14 @@ public interface RackService {
 
     String getSessionEmail(HttpServletRequest request);
 
-    boolean findMemberSession();
+    boolean findMemberSession(HttpServletRequest request);
 
     boolean findMemberAccessLevel(int accessLevel);
 
-    boolean findMemberAuthorize();
+    boolean findMemberAuthorize(boolean authorize);
 
-    AddRackResponse addToRack(AddRackRequest addRackRequest, String title, String sessionEmail);
+    AddRackResponse addToRack(AddRackRequest addRackRequest, String title, HttpServletRequest request);
 
-    ViewRackResponse viewRack(ViewBookRequest viewBookRequest);
+    ViewRackResponse updateRackByMember(UpdateRackRequest updateRackRequest, HttpServletRequest request);
 
 }

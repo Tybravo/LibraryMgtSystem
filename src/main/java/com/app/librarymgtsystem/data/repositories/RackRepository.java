@@ -4,8 +4,13 @@ import com.app.librarymgtsystem.data.models.Rack;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface RackRepository  extends MongoRepository<Rack, String> {
 
-    Rack findByAuthorize(boolean authorize);
+    Optional<Rack> findByAuthorize(boolean authorize);
+
+    Optional<Rack> findByMemberId(String memberId);
 }
+

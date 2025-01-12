@@ -209,8 +209,8 @@ public class BookServiceImpl implements BookService {
 
 
     @Override
-    public Optional<AddBookRequest> findBookById(String findBook) {
-        Optional<Book> getBook = bookRepository.findById(findBook);
+    public Optional<AddBookRequest> findBookById(String title) {
+        Optional<Book> getBook = bookRepository.findById(title);
         if (getBook.isPresent()) {
             Book book = getBook.get();
             AddBookRequest addBookRequest = new AddBookRequest();

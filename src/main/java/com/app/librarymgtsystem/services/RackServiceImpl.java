@@ -9,6 +9,7 @@ import com.app.librarymgtsystem.data.repositories.MemberRepository;
 import com.app.librarymgtsystem.data.repositories.RackRepository;
 import com.app.librarymgtsystem.data.repositories.ShelveRepository;
 import com.app.librarymgtsystem.dtos.requests.AddRackRequest;
+import com.app.librarymgtsystem.dtos.requests.UpdateRackRequest;
 import com.app.librarymgtsystem.dtos.requests.ViewBookRequest;
 import com.app.librarymgtsystem.dtos.responses.AddRackResponse;
 import com.app.librarymgtsystem.dtos.responses.ViewRackResponse;
@@ -16,6 +17,7 @@ import com.app.librarymgtsystem.exceptions.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.aggregation.ArithmeticOperators;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -33,18 +35,21 @@ public class RackServiceImpl implements RackService {
     private ShelveRepository shelveRepository;
 
 
+
     @Override
     public String getSessionEmail(HttpServletRequest request) {
-        HttpSession session = request.getSession(false); // Get existing session, do not create a new one
+        HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("userEmail") == null) {
-            throw new NotInSessionException("No active session or session expired");
+            throw new NotInSessionException("Not in session or currently logged out!");
         }
         return (String) session.getAttribute("userEmail");
     }
 
+
     @Override
-    public boolean findMemberSession() {
-        String sessionEmail = MemberServiceImpl.LoggedInUserContext.getSessionEmail();
+    public boolean findMemberSession(HttpServletRequest request) {
+        //String sessionEmail = MemberServiceImpl.LoggedInUserContext.getSessionEmail();
+        String sessionEmail = getSessionEmail(request);
         if (sessionEmail == null) {
             throw new NotInSessionException("Not in session or currently logged out!");
         }
@@ -65,24 +70,22 @@ public class RackServiceImpl implements RackService {
         return memberRepository.findByAccessLevel(accessLevel) != null;
     }
 
+
     @Override
-    public boolean findMemberAuthorize() {
-//        String sessionEmail = MemberServiceImpl.LoggedInUserContext.getSessionEmail();
-//        System.out.println("Session Email Retrieved: " + sessionEmail);
-//        Optional<Member> optionalMember = memberRepository.findBySessionEmail(sessionEmail);
-//        return optionalMember.isPresent() && optionalMember.get().isAuthorized();
-        return false;
+    public boolean findMemberAuthorize(boolean authorize) {
+        Optional<Rack> foundAuthorize = rackRepository.findByAuthorize(authorize);
+        return foundAuthorize.isPresent();
     }
 
 
-
     @Override
-    public AddRackResponse addToRack(AddRackRequest addRackRequest, String title, String sessionEmail) {
+    public AddRackResponse addToRack(AddRackRequest addRackRequest, String title, HttpServletRequest request) {
+        String sessionEmail = getSessionEmail(request);
         AddRackResponse addRackResponse = new AddRackResponse();
-        if (!findMemberSession()) {
+        if (!findMemberSession(request)) {
             throw new NotInSessionException("Not in session or currently logged out!");
         }
-       if (findMemberSession()) {
+       if (findMemberSession(request)) {
            findShelveByBookTitle(title);
            findShelveByBookTitleAvailable(title);
 
@@ -113,10 +116,53 @@ public class RackServiceImpl implements RackService {
         return addRackResponse;
     }
 
-    @Override
-    public ViewRackResponse viewRack(ViewBookRequest viewBookRequest) {
-        return null;
+@Override
+    public ViewRackResponse updateRackByMember(UpdateRackRequest updateRackRequest, HttpServletRequest request) {
+        String sessionEmail = getSessionEmail(request);
+        Optional<Member> optionalMember = memberRepository.findBySessionEmail(sessionEmail);
+        if (optionalMember.isEmpty()) {
+            throw new NotInSessionException("Not in session or currently logged out!");
+        }
+        Member foundMember = optionalMember.get();
+        String memberId = foundMember.getId();
+
+        Optional<Rack> optionalRack = rackRepository.findByMemberId(memberId);
+        if (optionalRack.isEmpty()) {
+            throw new IllegalArgumentException("No rack found for the member");
+        }
+        Rack foundRack = optionalRack.get();
+
+        if (!foundRack.isAuthorize()) {
+            if (updateRackRequest.getRackChoice() != null) {
+                foundRack.setRackChoice(updateRackRequest.getRackChoice());
+            }
+            if (updateRackRequest.getRackCopy() != null) {
+                foundRack.setRackCopy(updateRackRequest.getRackCopy());
+            }
+            if (updateRackRequest.getRackCurrency() != null) {
+                foundRack.setCurrency(updateRackRequest.getRackCurrency());
+            }
+            if (updateRackRequest.getRackAmount() != null) {
+                foundRack.setAmount(updateRackRequest.getRackAmount());
+            }
+            if (updateRackRequest.getRackNumberOfCopy() != 0) {
+                foundRack.setNumberOfCopy(updateRackRequest.getRackNumberOfCopy());
+            }
+            rackRepository.save(foundRack);
+        }
+        ViewRackResponse viewRackResponse = new ViewRackResponse();
+        viewRackResponse.setMemberId(foundMember.getId());
+        viewRackResponse.setRackId(foundRack.getId());
+        viewRackResponse.setRackChoice(foundRack.getRackChoice());
+        viewRackResponse.setRackCopy(foundRack.getRackCopy());
+        viewRackResponse.setRackCurrency(foundRack.getCurrency());
+        viewRackResponse.setRackAmount(foundRack.getAmount());
+        viewRackResponse.setRackNumberOfCopy(foundRack.getNumberOfCopy());
+        viewRackResponse.setViewRackMsg("Book in rack is updated successfully");
+
+        return viewRackResponse;
     }
+
 
 
     public void findShelveByBookTitle(String title) {
