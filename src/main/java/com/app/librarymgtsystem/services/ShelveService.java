@@ -5,6 +5,7 @@ import com.app.librarymgtsystem.data.models.ShelveType;
 import com.app.librarymgtsystem.dtos.requests.UpdateShelveRequest;
 import com.app.librarymgtsystem.dtos.responses.UpdateShelveResponse;
 import com.app.librarymgtsystem.dtos.responses.ViewShelveResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,16 +13,18 @@ import java.util.List;
 @Service
 public interface ShelveService {
 
-    boolean findMemberSession();
+    String getSessionEmail(HttpServletRequest request);
 
-    List<Shelve> viewShelveByCategory(ShelveType category);
+    boolean findMemberSession(HttpServletRequest request);
 
-    List<ViewShelveResponse> viewShelveByCategoryForMembers(ShelveType category);
+    List<Shelve> viewShelveByCategory(ShelveType category, HttpServletRequest request);
 
-    UpdateShelveResponse updateShelveByBookTitle(UpdateShelveRequest updateShelveRequest, String title);
+    List<ViewShelveResponse> viewShelveByCategoryForMembers(ShelveType category, HttpServletRequest request);
 
-    UpdateShelveResponse setBookAvailableInShelve(UpdateShelveRequest updateShelveRequest, String title);
+    UpdateShelveResponse updateShelveByBookTitle(UpdateShelveRequest updateShelveRequest, String title, HttpServletRequest request);
 
-    UpdateShelveResponse setBookUnavailableInShelve(UpdateShelveRequest updateShelveRequest, String title);
+    UpdateShelveResponse setBookAvailableInShelve(UpdateShelveRequest updateShelveRequest, String title, HttpServletRequest request);
+
+    UpdateShelveResponse setBookUnavailableInShelve(UpdateShelveRequest updateShelveRequest, String title, HttpServletRequest request);
 
 }

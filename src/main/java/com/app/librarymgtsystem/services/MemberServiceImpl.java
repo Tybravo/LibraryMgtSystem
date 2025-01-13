@@ -4,7 +4,6 @@ import com.app.librarymgtsystem.data.models.Member;
 import com.app.librarymgtsystem.data.repositories.MemberRepository;
 import com.app.librarymgtsystem.dtos.requests.AddMemberRequest;
 import com.app.librarymgtsystem.dtos.requests.LoginRequest;
-import com.app.librarymgtsystem.dtos.requests.LogoutRequest;
 import com.app.librarymgtsystem.dtos.responses.AddMemberResponse;
 import com.app.librarymgtsystem.dtos.responses.LoginResponse;
 import com.app.librarymgtsystem.dtos.responses.LogoutResponse;
@@ -30,6 +29,28 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    public void emailCannotHaveSpace(AddMemberRequest addMemberRequest) {
+        String email = addMemberRequest.getEmail();
+        if (email != null && email.contains(" ")) {
+            throw new EmailCannotHaveSpacesException("Email cannot have spaces");
+        }
+    }
+    @Override
+    public void passwordCannotHaveSpace(AddMemberRequest addMemberRequest) {
+        String password = addMemberRequest.getPassword();
+        if (password != null && password.contains(" ")) {
+            throw new PasswordCannotHaveSpacesException("Password cannot have spaces");
+        }
+    }
+
+    @Override
+    public void emailCharNotIncluded(AddMemberRequest addMemberRequest) {
+        if(!addMemberRequest.getEmail().contains("@") || !addMemberRequest.getEmail().contains(".") || !addMemberRequest.getEmail().contains("com")) {
+            throw new EmailCharNotIncludedException("You forgot to include a character in Email");
+        }
+    }
+
+    @Override
     public void emailCannotBeEmpty(AddMemberRequest addMemberRequest) {
         if (addMemberRequest.getEmail() == null || addMemberRequest.getEmail().isEmpty() ||
         addMemberRequest.getPassword() == null || addMemberRequest.getPassword().isEmpty() ||
@@ -38,9 +59,6 @@ public class MemberServiceImpl implements MemberService {
         addMemberRequest.getAddress() == null || addMemberRequest.getAddress().isEmpty() ||
         addMemberRequest.getPassword().length() < 7 ) {
             throw new EmailCannotBeEmptyException("Registration Fields cannot be empty");
-        }
-        if(!addMemberRequest.getEmail().contains("@") || !addMemberRequest.getEmail().contains(".") || !addMemberRequest.getEmail().contains("com")) {
-            throw new EmailCannotBeEmptyException("You forgot to include a character in Email");
         }
     }
 
@@ -55,6 +73,9 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public AddMemberResponse registerMember(AddMemberRequest addMemberRequest) {
         emailCannotBeEmpty(addMemberRequest);
+        emailCharNotIncluded(addMemberRequest);
+        emailCannotHaveSpace(addMemberRequest);
+        passwordCannotHaveSpace(addMemberRequest);
 
         Member getMember = findMemberByEmail(addMemberRequest.getEmail());
         AddMemberResponse regResponse = new AddMemberResponse();
@@ -226,6 +247,15 @@ public class MemberServiceImpl implements MemberService {
             sessionToken.remove();
         }
     }
+
+
+
+//    private void validateEmailFormat(String email) {
+//        String emailRegex = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$";
+//        if (!email.matches(emailRegex)) {
+//            throw new IllegalArgumentException("Invalid email format");
+//        }
+//    }
 
 
 }

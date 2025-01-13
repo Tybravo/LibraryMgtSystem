@@ -16,15 +16,13 @@ import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 @SpringBootTest
@@ -57,6 +55,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_Librarian_Not_In_Session_Cannot_View_Shelve_Of_Books_By_Category() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -74,7 +76,7 @@ class ShelveServiceImplTest {
         viewShelveResponse.setSessionStatus(false);
 
         NotInSessionException exception = assertThrows(NotInSessionException.class, () ->
-                shelveService.viewShelveByCategory(ShelveType.FICTION));
+                shelveService.viewShelveByCategory(ShelveType.FICTION, request));
         assertEquals("Not in session or currently logged out!", exception.getMessage());
         }
 
@@ -82,6 +84,7 @@ class ShelveServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_View_Shelve_Of_Books_By_Category_Using_Wrong_Access_Level() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -104,12 +107,16 @@ class ShelveServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         ViewShelveResponse viewShelveResponse = new ViewShelveResponse();
         viewShelveResponse.setSessionStatus(true);
         ShelveType shelveType = ShelveType.FICTION;
 
         NotEligiblePageException exception = assertThrows(NotEligiblePageException.class, () ->
-                shelveService.viewShelveByCategory(shelveType));
+                shelveService.viewShelveByCategory(shelveType, request));
         assertEquals("You're not eligible to access this page", exception.getMessage());
     }
 
@@ -117,6 +124,7 @@ class ShelveServiceImplTest {
     public void test_That_Librarian_Inside_Session_Can_View_Shelve_Of_Books_By_Category() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -139,6 +147,10 @@ class ShelveServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertTrue(getResponse.isSessionStatus());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest1 = new AddBookRequest();
         addBookRequest1.setBookTitle("Be Intentional A");
         addBookRequest1.setBookAuthor("Author A");
@@ -146,7 +158,7 @@ class ShelveServiceImplTest {
         addBookRequest1.setBookDescription("Carefully thought out in advance A");
         addBookRequest1.setSessionStatus(true);
         addBookRequest1.setAccessLevel(20);
-        AddBookResponse savedBookRequest1 = bookService.addBook(addBookRequest1);
+        AddBookResponse savedBookRequest1 = bookService.addBook(addBookRequest1, request);
         assertEquals(savedBookRequest1.getBookTitle(), addBookRequest1.getBookTitle());
 
         AddBookRequest addBookRequest2 = new AddBookRequest();
@@ -156,7 +168,7 @@ class ShelveServiceImplTest {
         addBookRequest2.setBookDescription("Carefully thought out in advance B");
         addBookRequest2.setSessionStatus(true);
         addBookRequest2.setAccessLevel(20);
-        AddBookResponse savedBookRequest2 = bookService.addBook(addBookRequest2);
+        AddBookResponse savedBookRequest2 = bookService.addBook(addBookRequest2, request);
         assertEquals(savedBookRequest2.getBookTitle(), addBookRequest2.getBookTitle());
 
         Shelve shelve1 = new Shelve();
@@ -180,7 +192,7 @@ class ShelveServiceImplTest {
         shelve2.setBorrowed(false);
         shelveRepository.save(shelve2);
 
-        List<Shelve> shelves = shelveService.viewShelveByCategory(ShelveType.FICTION);
+        List<Shelve> shelves = shelveService.viewShelveByCategory(ShelveType.FICTION, request);
 
         assertNotNull(shelves);
         assertEquals(2, shelves.size());
@@ -196,6 +208,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_Member_Not_In_Session_Cannot_View_Shelve_Of_Books_By_Category_For_Members() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Ade Bravo");
         addMemberRequest.setEmail("twinebravo@gmail.com");
@@ -212,14 +228,15 @@ class ShelveServiceImplTest {
         viewShelveResponse.setSessionStatus(false);
 
         NotInSessionException exception = assertThrows(NotInSessionException.class, () ->
-                shelveService.viewShelveByCategoryForMembers(ShelveType.CHILDREN));
+                shelveService.viewShelveByCategoryForMembers(ShelveType.CHILDREN, request));
         assertEquals("Not in session or currently logged out!", exception.getMessage());
     }
 
     @Test
-    public void test_That_LMember_Inside_Session_Cannot_View_Shelve_Of_Books_By_Category_Using_Wrong_Access_Level_For_Members() {
+    public void test_That_Member_Inside_Session_Cannot_View_Shelve_Of_Books_By_Category_Using_Wrong_Access_Level_For_Members() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -242,12 +259,16 @@ class ShelveServiceImplTest {
         assertEquals("twinebravo@gmail.com", getResponse.getEmail());
         assertEquals("tybravo", getResponse.getPassword());
 
+        String sessionEmailMember = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailMember);
+
         ViewShelveResponse viewShelveResponse = new ViewShelveResponse();
         viewShelveResponse.setSessionStatus(true);
         ShelveType shelveType = ShelveType.COOKBOOKS;
 
         NotEligiblePageException exception = assertThrows(NotEligiblePageException.class, () ->
-                shelveService.viewShelveByCategoryForMembers(shelveType));
+                shelveService.viewShelveByCategoryForMembers(shelveType, request));
         assertEquals("You're not eligible to access this page", exception.getMessage());
     }
 
@@ -255,6 +276,7 @@ class ShelveServiceImplTest {
     public void test_That_Member_Inside_Session_Can_View_Shelve_Of_Books_By_Category_For_Members() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -277,6 +299,10 @@ class ShelveServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertTrue(getResponse.isSessionStatus());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest book1 = new AddBookRequest();
         book1.setBookTitle("Be Intentional C");
         book1.setBookAuthor("Author C");
@@ -284,7 +310,7 @@ class ShelveServiceImplTest {
         book1.setBookDescription("Carefully thought out in advance C.");
         book1.setSessionStatus(true);
         book1.setAccessLevel(20);
-        AddBookResponse savedBook1 = bookService.addBook(book1);
+        AddBookResponse savedBook1 = bookService.addBook(book1, request);
         assertEquals(book1.getBookTitle(), savedBook1.getBookTitle());
 
         AddBookRequest book2 = new AddBookRequest();
@@ -294,7 +320,7 @@ class ShelveServiceImplTest {
         book2.setBookDescription("Carefully thought out in advance D");
         book2.setSessionStatus(true);
         book2.setAccessLevel(20);
-        AddBookResponse savedBook2 = bookService.addBook(book2);
+        AddBookResponse savedBook2 = bookService.addBook(book2, request);
         assertEquals(book2.getBookTitle(), savedBook2.getBookTitle());
 
         Shelve shelve1 = new Shelve();
@@ -334,7 +360,7 @@ class ShelveServiceImplTest {
         assertEquals("twinebravo@gmail.com", getResponse1.getEmail());
         assertEquals("tybravo", getResponse1.getPassword());
 
-        List<ViewShelveResponse> shelves = shelveService.viewShelveByCategoryForMembers(ShelveType.CHILDREN);
+        List<ViewShelveResponse> shelves = shelveService.viewShelveByCategoryForMembers(ShelveType.CHILDREN, request);
         assertNotNull(shelves);
         assertEquals(2, shelves.size());
 
@@ -349,6 +375,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_Librarian_Not_In_Session_Cannot_Update_Shelve_Of_Books() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -367,7 +397,7 @@ class ShelveServiceImplTest {
         String title = updateShelveRequest.getCurrentBookTitle();
 
         NotInSessionException exception = assertThrows(NotInSessionException.class, () ->
-                shelveService.updateShelveByBookTitle(updateShelveRequest, title));
+                shelveService.updateShelveByBookTitle(updateShelveRequest, title, request));
         assertEquals("Not in session or currently logged out!", exception.getMessage());
     }
 
@@ -375,6 +405,7 @@ class ShelveServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_Update_Shelve_Of_Books_Using_Wrong_Access_Level() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -397,12 +428,16 @@ class ShelveServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         UpdateShelveRequest updateShelveRequest = new UpdateShelveRequest();
         updateShelveRequest.setSessionStatus(false);
         String title = updateShelveRequest.getCurrentBookTitle();
 
         NotEligiblePageException exception = assertThrows(NotEligiblePageException.class, () ->
-                shelveService.updateShelveByBookTitle(updateShelveRequest, title));
+                shelveService.updateShelveByBookTitle(updateShelveRequest, title, request));
         assertEquals("You're not eligible to access this page", exception.getMessage());
     }
 
@@ -410,6 +445,7 @@ class ShelveServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_Update_Shelve_Of_Books_If_Input_Book_Title_Not_found(){
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -432,6 +468,10 @@ class ShelveServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional G");
         addBookRequest.setBookAuthor("Author Two G");
@@ -439,7 +479,7 @@ class ShelveServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
-        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
         assertEquals(savedBookRequest.getBookTitle(), addBookRequest.getBookTitle());
 
         UpdateShelveRequest updateShelveRequest = new UpdateShelveRequest();
@@ -449,7 +489,7 @@ class ShelveServiceImplTest {
         String title = updateShelveRequest.getCurrentBookTitle();
 
         BookNotFoundException exception = assertThrows(BookNotFoundException.class, () ->
-                shelveService.updateShelveByBookTitle(updateShelveRequest, title));
+                shelveService.updateShelveByBookTitle(updateShelveRequest, title, request));
         assertEquals("Book with the title '" + updateShelveRequest.getCurrentBookTitle() + "' not found", exception.getMessage());
     }
 
@@ -457,6 +497,7 @@ class ShelveServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_Update_Shelve_Of_Books_If_BookId_Not_found(){
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -479,6 +520,10 @@ class ShelveServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional G");
         addBookRequest.setBookAuthor("Author Two G");
@@ -486,7 +531,7 @@ class ShelveServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
-        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
         assertEquals(savedBookRequest.getBookTitle(), addBookRequest.getBookTitle());
 
         UpdateShelveRequest updateShelveRequest = new UpdateShelveRequest();
@@ -507,7 +552,7 @@ class ShelveServiceImplTest {
         updateShelveRequest.setBookId(addShelve.getBookId());
 
         BookNotFoundException exception = assertThrows(BookNotFoundException.class, () ->
-                shelveService.updateShelveByBookTitle(updateShelveRequest, title));
+                shelveService.updateShelveByBookTitle(updateShelveRequest, title, request));
         assertEquals("Book not found", exception.getMessage());
     }
 
@@ -515,6 +560,7 @@ class ShelveServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_Update_Shelve_Of_Books_By_Book_Title_If_Is_Not_Available() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -537,6 +583,10 @@ class ShelveServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional GG");
         addBookRequest.setBookAuthor("Author Two GG");
@@ -547,7 +597,7 @@ class ShelveServiceImplTest {
         addShelveRequest.setBookCategory(ShelveType.COMICS);
         addShelveRequest.setBookGenre("Genre GG");
 
-        AddBookResponse addBookResponse = bookService.addBookWithShelve(addBookRequest, addShelveRequest);
+        AddBookResponse addBookResponse = bookService.addBookWithShelve(addBookRequest, addShelveRequest, request);
         assertNotNull(addBookResponse.getId(), "Book ID should not be null");
         assertEquals("Be Intentional GG", addBookResponse.getBookTitle());
         assertEquals("Author Two GG", addBookResponse.getBookAuthor());
@@ -583,7 +633,7 @@ class ShelveServiceImplTest {
         String title = updateShelveRequest.getCurrentBookTitle();
 
         BookInShelveNotAvailableException exception = assertThrows(BookInShelveNotAvailableException.class, () ->
-                shelveService.updateShelveByBookTitle(updateShelveRequest, title));
+                shelveService.updateShelveByBookTitle(updateShelveRequest, title, request));
         assertEquals("Book is currently not available in the shelve", exception.getMessage());
     }
 
@@ -591,6 +641,7 @@ class ShelveServiceImplTest {
     public void test_That_Librarian_Inside_Session_Can_Update_Shelve_Of_Books_By_Book_Title_If_Is_Available() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -613,6 +664,10 @@ class ShelveServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional GG");
         addBookRequest.setBookAuthor("Author Two GG");
@@ -623,7 +678,7 @@ class ShelveServiceImplTest {
         addShelveRequest.setBookCategory(ShelveType.COMICS);
         addShelveRequest.setBookGenre("Genre GG");
 
-        AddBookResponse addBookResponse = bookService.addBookWithShelve(addBookRequest, addShelveRequest);
+        AddBookResponse addBookResponse = bookService.addBookWithShelve(addBookRequest, addShelveRequest,  request);
         assertNotNull(addBookResponse.getId(), "Book ID should not be null");
         assertEquals("Be Intentional GG", addBookResponse.getBookTitle());
         assertEquals("Author Two GG", addBookResponse.getBookAuthor());
@@ -658,7 +713,7 @@ class ShelveServiceImplTest {
         updateShelveRequest.setBookCategory(ShelveType.EDUCATION);
         String title = updateShelveRequest.getCurrentBookTitle();
 
-        UpdateShelveResponse updatedShelve = shelveService.updateShelveByBookTitle(updateShelveRequest, title);
+        UpdateShelveResponse updatedShelve = shelveService.updateShelveByBookTitle(updateShelveRequest, title, request);
         assertEquals(updatedShelve.getUpdateShelveMsg(), "Shelve updated successfully");
         assertEquals(updatedShelve.getBookCategory(), ShelveType.EDUCATION);
         assertEquals(updatedShelve.getBookGenre(), "Genre GGG");
@@ -666,6 +721,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_Librarian_Not_In_Session_Cannot_Set_Book_Inside_Shelve_To_Be_Available() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -684,7 +743,7 @@ class ShelveServiceImplTest {
         String title = updateShelveRequest.getCurrentBookTitle();
 
         NotInSessionException exception = assertThrows(NotInSessionException.class, () ->
-                shelveService.setBookAvailableInShelve(updateShelveRequest, title));
+                shelveService.setBookAvailableInShelve(updateShelveRequest, title, request));
         assertEquals("Not in session or currently logged out!", exception.getMessage());
     }
 
@@ -692,6 +751,7 @@ class ShelveServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_Set_Book_Inside_Shelve_To_Be_Available_Using_Wrong_Access_Level() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -714,12 +774,16 @@ class ShelveServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         UpdateShelveRequest updateShelveRequest = new UpdateShelveRequest();
         updateShelveRequest.setAvailable(true);
         String title = updateShelveRequest.getCurrentBookTitle();
 
         NotEligiblePageException exception = assertThrows(NotEligiblePageException.class, () ->
-                shelveService.setBookAvailableInShelve(updateShelveRequest, title));
+                shelveService.setBookAvailableInShelve(updateShelveRequest, title, request));
         assertEquals("You're not eligible to access this page", exception.getMessage());
     }
 
@@ -727,6 +791,7 @@ class ShelveServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_Set_Book_Inside_Shelve_To_Be_Available_If_Input_Book_Title_Not_found(){
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -749,6 +814,10 @@ class ShelveServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional G");
         addBookRequest.setBookAuthor("Author Two G");
@@ -756,7 +825,7 @@ class ShelveServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
-        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
         assertEquals(savedBookRequest.getBookTitle(), addBookRequest.getBookTitle());
 
         UpdateShelveRequest updateShelveRequest = new UpdateShelveRequest();
@@ -765,7 +834,7 @@ class ShelveServiceImplTest {
         String title = updateShelveRequest.getCurrentBookTitle();
 
         BookNotFoundException exception = assertThrows(BookNotFoundException.class, () ->
-                shelveService.setBookAvailableInShelve(updateShelveRequest, title));
+                shelveService.setBookAvailableInShelve(updateShelveRequest, title, request));
         assertEquals("Book with the title '" + updateShelveRequest.getCurrentBookTitle() + "' not found", exception.getMessage());
     }
 
@@ -773,6 +842,7 @@ class ShelveServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_Set_Book_Inside_Shelve_To_Be_Available_If_BookId_Not_found(){
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -795,6 +865,10 @@ class ShelveServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional G");
         addBookRequest.setBookAuthor("Author Two G");
@@ -802,7 +876,7 @@ class ShelveServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
-        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
         assertEquals(savedBookRequest.getBookTitle(), addBookRequest.getBookTitle());
 
         UpdateShelveRequest updateShelveRequest = new UpdateShelveRequest();
@@ -823,7 +897,7 @@ class ShelveServiceImplTest {
         updateShelveRequest.setBookId(addShelve.getBookId());
 
         BookNotFoundException exception = assertThrows(BookNotFoundException.class, () ->
-                shelveService.setBookAvailableInShelve(updateShelveRequest, title));
+                shelveService.setBookAvailableInShelve(updateShelveRequest, title, request));
         assertEquals("Book not found", exception.getMessage());
     }
 
@@ -831,6 +905,7 @@ class ShelveServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_Set_Book_Inside_Shelve_To_Be_Available_If_Is_Already_Available() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -853,6 +928,10 @@ class ShelveServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional G");
         addBookRequest.setBookAuthor("Author Two G");
@@ -860,7 +939,7 @@ class ShelveServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
-        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
         assertEquals(savedBookRequest.getBookTitle(), addBookRequest.getBookTitle());
 
         UpdateShelveRequest updateShelveRequest = new UpdateShelveRequest();
@@ -882,7 +961,7 @@ class ShelveServiceImplTest {
         updateShelveRequest.setAvailable(true);
 
         BooKAvailabilitySetAlreadyException exception = assertThrows(BooKAvailabilitySetAlreadyException.class, () ->
-                shelveService.setBookAvailableInShelve(updateShelveRequest, title));
+                shelveService.setBookAvailableInShelve(updateShelveRequest, title, request));
         assertEquals("Stop! The Book is already set to be available", exception.getMessage());
     }
 
@@ -890,6 +969,7 @@ class ShelveServiceImplTest {
     public void test_That_Librarian_Inside_Session_Can_Set_Book_Inside_Shelve_To_Be_Available() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -912,6 +992,10 @@ class ShelveServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional GG");
         addBookRequest.setBookAuthor("Author Two GG");
@@ -922,7 +1006,7 @@ class ShelveServiceImplTest {
         addShelveRequest.setBookCategory(ShelveType.COMICS);
         addShelveRequest.setBookGenre("Genre GG");
 
-        AddBookResponse addBookResponse = bookService.addBookWithShelve(addBookRequest, addShelveRequest);
+        AddBookResponse addBookResponse = bookService.addBookWithShelve(addBookRequest, addShelveRequest, request);
         assertNotNull(addBookResponse.getId(), "Book ID should not be null");
         assertEquals("Be Intentional GG", addBookResponse.getBookTitle());
         assertEquals("Author Two GG", addBookResponse.getBookAuthor());
@@ -956,7 +1040,7 @@ class ShelveServiceImplTest {
         updateShelveRequest.setAvailable(true);
         String title = updateShelveRequest.getCurrentBookTitle();
 
-        UpdateShelveResponse updatedShelve = shelveService.setBookAvailableInShelve(updateShelveRequest, title);
+        UpdateShelveResponse updatedShelve = shelveService.setBookAvailableInShelve(updateShelveRequest, title, request);
         assertEquals(updatedShelve.getUpdateShelveMsg(), "Yes! Book is now available");
 
         Optional<Shelve> updatedAvailable = shelveRepository.findByBookId(addBookResponse.getId());
@@ -968,6 +1052,10 @@ class ShelveServiceImplTest {
 
     @Test
     public void test_That_Librarian_Not_In_Session_Cannot_Set_Book_Inside_Shelve_To_Be_Unavailable() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -986,7 +1074,7 @@ class ShelveServiceImplTest {
         String title = updateShelveRequest.getCurrentBookTitle();
 
         NotInSessionException exception = assertThrows(NotInSessionException.class, () ->
-                shelveService.setBookUnavailableInShelve(updateShelveRequest, title));
+                shelveService.setBookUnavailableInShelve(updateShelveRequest, title, request));
         assertEquals("Not in session or currently logged out!", exception.getMessage());
     }
 
@@ -994,6 +1082,7 @@ class ShelveServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_Set_Book_Inside_Shelve_To_Be_UnAvailable_Using_Wrong_Access_Level() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -1016,12 +1105,16 @@ class ShelveServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         UpdateShelveRequest updateShelveRequest = new UpdateShelveRequest();
         updateShelveRequest.setAvailable(false);
         String title = updateShelveRequest.getCurrentBookTitle();
 
         NotEligiblePageException exception = assertThrows(NotEligiblePageException.class, () ->
-                shelveService.setBookUnavailableInShelve(updateShelveRequest, title));
+                shelveService.setBookUnavailableInShelve(updateShelveRequest, title, request));
         assertEquals("You're not eligible to access this page", exception.getMessage());
     }
 
@@ -1029,6 +1122,7 @@ class ShelveServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_Set_Book_Inside_Shelve_To_Be_Unavailable_If_Input_Book_Title_Not_found(){
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -1051,6 +1145,10 @@ class ShelveServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional G");
         addBookRequest.setBookAuthor("Author Two G");
@@ -1058,7 +1156,7 @@ class ShelveServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
-        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
         assertEquals(savedBookRequest.getBookTitle(), addBookRequest.getBookTitle());
 
         UpdateShelveRequest updateShelveRequest = new UpdateShelveRequest();
@@ -1067,7 +1165,7 @@ class ShelveServiceImplTest {
         String title = updateShelveRequest.getCurrentBookTitle();
 
         BookNotFoundException exception = assertThrows(BookNotFoundException.class, () ->
-                shelveService.setBookUnavailableInShelve(updateShelveRequest, title));
+                shelveService.setBookUnavailableInShelve(updateShelveRequest, title, request));
         assertEquals("Book with the title '" + updateShelveRequest.getCurrentBookTitle() + "' not found", exception.getMessage());
     }
 
@@ -1075,6 +1173,7 @@ class ShelveServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_Set_Book_Inside_Shelve_To_Be_Unavailable_If_BookId_Not_found(){
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -1097,6 +1196,10 @@ class ShelveServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional G");
         addBookRequest.setBookAuthor("Author Two G");
@@ -1104,7 +1207,7 @@ class ShelveServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
-        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
         assertEquals(savedBookRequest.getBookTitle(), addBookRequest.getBookTitle());
 
         UpdateShelveRequest updateShelveRequest = new UpdateShelveRequest();
@@ -1126,7 +1229,7 @@ class ShelveServiceImplTest {
         updateShelveRequest.setAvailable(false);
 
         BookNotFoundException exception = assertThrows(BookNotFoundException.class, () ->
-                shelveService.setBookAvailableInShelve(updateShelveRequest, title));
+                shelveService.setBookAvailableInShelve(updateShelveRequest, title, request));
         assertEquals("Book not found", exception.getMessage());
     }
 
@@ -1134,6 +1237,7 @@ class ShelveServiceImplTest {
     public void  test_That_Librarian_Inside_Session_Cannot_Set_Book_Inside_Shelve_To_Be_Unavailable_If_Is_Already_Unavailable() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -1156,6 +1260,10 @@ class ShelveServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional G");
         addBookRequest.setBookAuthor("Author Two G");
@@ -1163,7 +1271,7 @@ class ShelveServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
-        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
         assertEquals(savedBookRequest.getBookTitle(), addBookRequest.getBookTitle());
 
         UpdateShelveRequest updateShelveRequest = new UpdateShelveRequest();
@@ -1185,7 +1293,7 @@ class ShelveServiceImplTest {
         updateShelveRequest.setAvailable(false);
 
         BooKAvailabilitySetAlreadyException exception = assertThrows(BooKAvailabilitySetAlreadyException.class, () ->
-                shelveService.setBookUnavailableInShelve(updateShelveRequest, title));
+                shelveService.setBookUnavailableInShelve(updateShelveRequest, title, request));
         assertEquals("Stop! The Book is already set to be unavailable", exception.getMessage());
     }
 
@@ -1193,6 +1301,7 @@ class ShelveServiceImplTest {
     public void test_That_Librarian_Inside_Session_Can_Set_Book_Inside_Shelve_To_Be_Unavailable() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -1215,6 +1324,10 @@ class ShelveServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional GG");
         addBookRequest.setBookAuthor("Author Two GG");
@@ -1225,7 +1338,7 @@ class ShelveServiceImplTest {
         addShelveRequest.setBookCategory(ShelveType.COMICS);
         addShelveRequest.setBookGenre("Genre GG");
 
-        AddBookResponse addBookResponse = bookService.addBookWithShelve(addBookRequest, addShelveRequest);
+        AddBookResponse addBookResponse = bookService.addBookWithShelve(addBookRequest, addShelveRequest, request);
         assertNotNull(addBookResponse.getId(), "Book ID should not be null");
         assertEquals("Be Intentional GG", addBookResponse.getBookTitle());
         assertEquals("Author Two GG", addBookResponse.getBookAuthor());
@@ -1259,7 +1372,7 @@ class ShelveServiceImplTest {
         updateShelveRequest.setAvailable(false);
         String title = updateShelveRequest.getCurrentBookTitle();
 
-        UpdateShelveResponse updatedShelve = shelveService.setBookUnavailableInShelve(updateShelveRequest, title);
+        UpdateShelveResponse updatedShelve = shelveService.setBookUnavailableInShelve(updateShelveRequest, title, request);
         assertEquals(updatedShelve.getUpdateShelveMsg(), "No! Book is not available");
 
         Optional<Shelve> updatedAvailable = shelveRepository.findByBookId(addBookResponse.getId());

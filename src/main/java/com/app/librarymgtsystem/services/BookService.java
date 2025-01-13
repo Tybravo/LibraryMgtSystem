@@ -7,20 +7,23 @@ import com.app.librarymgtsystem.dtos.responses.*;
 import com.app.librarymgtsystem.dtos.requests.AddBookRequest;
 import com.app.librarymgtsystem.dtos.requests.AddShelveRequest;
 import com.app.librarymgtsystem.dtos.requests.UpdateBookRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Optional;
 
 public interface BookService {
 
-    boolean findMemberSession();
+    String getSessionEmail(HttpServletRequest request);
+
+    boolean findMemberSession(HttpServletRequest request);
 
     boolean findMemberAccessLevel(int accessLevel);
 
-    AddBookResponse addBook(AddBookRequest addBookRequest);
+    AddBookResponse addBook(AddBookRequest addBookRequest, HttpServletRequest request);
 
-    AddBookResponse addBookWithShelve(AddBookRequest addBookRequest, AddShelveRequest addShelveRequest);
+    AddBookResponse addBookWithShelve(AddBookRequest addBookRequest, AddShelveRequest addShelveRequest, HttpServletRequest request);
 
-    Optional<AddBookRequest> findBookById(String title);
+    Optional<Book> findBookById(String title);
 
     AddShelveResponse addShelveWithBookId(AddShelveRequest addShelveRequest);
 
@@ -34,19 +37,19 @@ public interface BookService {
 
     Book findBookByIsbn(String isbn);
 
-    void bookCannotBeEmpty(AddBookRequest addEmptyBook);
+    void bookCannotBeEmpty(AddBookRequest addBookRequest);
 
-    UpdateBookResponse updateBookByTitle(UpdateBookRequest updateBookRequest, String title);
+    UpdateBookResponse updateBookByTitle(UpdateBookRequest updateBookRequest, String title, HttpServletRequest request);
 
-    ViewBookResponse viewBookByAll(int page, int size);
+    ViewBookResponse viewBookByAll(int page, int size, HttpServletRequest request);
 
-    ViewBookResponse viewBookByAllForMembers(int page, int size);
+    ViewBookResponse viewBookByAllForMembers(int page, int size, HttpServletRequest request);
 
-    ViewBookResponse viewBookByTitle(String title);
+    ViewBookResponse viewBookByTitle(String title, HttpServletRequest request);
 
-    ViewBookResponse viewBookByTitleForMembers(String title);
+    ViewBookResponse viewBookByTitleForMembers(String title, HttpServletRequest request);
 
-    DeleteBookResponse deleteBookByTitle(String title);
+    DeleteBookResponse deleteBookByTitle(String title, HttpServletRequest request);
 
 }
 

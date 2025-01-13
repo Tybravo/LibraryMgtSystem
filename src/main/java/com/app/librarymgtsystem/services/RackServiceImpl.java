@@ -10,14 +10,12 @@ import com.app.librarymgtsystem.data.repositories.RackRepository;
 import com.app.librarymgtsystem.data.repositories.ShelveRepository;
 import com.app.librarymgtsystem.dtos.requests.AddRackRequest;
 import com.app.librarymgtsystem.dtos.requests.UpdateRackRequest;
-import com.app.librarymgtsystem.dtos.requests.ViewBookRequest;
 import com.app.librarymgtsystem.dtos.responses.AddRackResponse;
 import com.app.librarymgtsystem.dtos.responses.ViewRackResponse;
 import com.app.librarymgtsystem.exceptions.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.aggregation.ArithmeticOperators;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -48,7 +46,6 @@ public class RackServiceImpl implements RackService {
 
     @Override
     public boolean findMemberSession(HttpServletRequest request) {
-        //String sessionEmail = MemberServiceImpl.LoggedInUserContext.getSessionEmail();
         String sessionEmail = getSessionEmail(request);
         if (sessionEmail == null) {
             throw new NotInSessionException("Not in session or currently logged out!");

@@ -12,6 +12,8 @@ import com.app.librarymgtsystem.dtos.responses.UpdateShelveResponse;
 import com.app.librarymgtsystem.dtos.responses.ViewShelveResponse;
 import com.app.librarymgtsystem.exceptions.*;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,8 +36,18 @@ public class ShelveServiceImpl implements ShelveService {
 
 
     @Override
-    public boolean findMemberSession() {
-        String sessionEmail = MemberServiceImpl.LoggedInUserContext.getSessionEmail();
+    public String getSessionEmail(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("userEmail") == null) {
+            throw new NotInSessionException("Not in session or currently logged out!");
+        }
+        return (String) session.getAttribute("userEmail");
+    }
+
+
+    @Override
+    public boolean findMemberSession(HttpServletRequest request) {
+        String sessionEmail = getSessionEmail(request);
         if (sessionEmail == null) {
             throw new NotInSessionException("Not in session or currently logged out!");
         }
@@ -61,14 +73,14 @@ public class ShelveServiceImpl implements ShelveService {
 
 
     @Override
-    public List<Shelve> viewShelveByCategory(ShelveType category) {
-        if (!findMemberSession()) {
+    public List<Shelve> viewShelveByCategory(ShelveType category, HttpServletRequest request) {
+        if (!findMemberSession(request)) {
             throw new EmailNotFoundException("Member email not found");
         }
-        if (findMemberSession() && !findMemberAccessLevel(20)) {
+        if (findMemberSession(request) && !findMemberAccessLevel(20)) {
             throw new NotEligiblePageException("You're not eligible to access this page");
         }
-        if (findMemberSession() && findMemberAccessLevel(20)) {
+        if (findMemberSession(request) && findMemberAccessLevel(20)) {
             List<Shelve> shelves = shelveRepository.findByCategory(category);
             for (Shelve shelve : shelves) {
                 if (shelve.getBookId() != null) {
@@ -83,11 +95,11 @@ public class ShelveServiceImpl implements ShelveService {
 
 
     @Override
-    public List<ViewShelveResponse> viewShelveByCategoryForMembers(ShelveType category) {
-        if (!findMemberSession()) {
+    public List<ViewShelveResponse> viewShelveByCategoryForMembers(ShelveType category, HttpServletRequest request) {
+        if (!findMemberSession(request)) {
             throw new EmailNotFoundException("Member email not found");
         }
-        if (findMemberSession() && !findMemberAccessLevel(10)) {
+        if (findMemberSession(request) && !findMemberAccessLevel(10)) {
             throw new NotEligiblePageException("You're not eligible to access this page");
         }
         List<Shelve> shelves = shelveRepository.findByCategory(category);
@@ -118,15 +130,15 @@ public class ShelveServiceImpl implements ShelveService {
 
 
     @Override
-    public UpdateShelveResponse updateShelveByBookTitle(UpdateShelveRequest updateShelveRequest, String title) {
+    public UpdateShelveResponse updateShelveByBookTitle(UpdateShelveRequest updateShelveRequest, String title, HttpServletRequest request) {
         UpdateShelveResponse updateShelveResponse = new UpdateShelveResponse();
-        if (!findMemberSession()) {
+        if (!findMemberSession(request)) {
             throw new EmailNotFoundException("Member email not found");
         }
-        if (findMemberSession() && !findMemberAccessLevel(20)) {
+        if (findMemberSession(request) && !findMemberAccessLevel(20)) {
             throw new NotEligiblePageException("You're not eligible to access this page");
         }
-        if (findMemberSession() && findMemberAccessLevel(20)) {
+        if (findMemberSession(request) && findMemberAccessLevel(20)) {
 
             Book foundBook = findBookByTitle(updateShelveRequest.getCurrentBookTitle());
             if (foundBook == null) {
@@ -160,15 +172,15 @@ public class ShelveServiceImpl implements ShelveService {
 
 
     @Override
-    public UpdateShelveResponse setBookAvailableInShelve(UpdateShelveRequest updateShelveRequest, String title) {
+    public UpdateShelveResponse setBookAvailableInShelve(UpdateShelveRequest updateShelveRequest, String title, HttpServletRequest request) {
         UpdateShelveResponse updateBookAvail = new UpdateShelveResponse();
-        if (!findMemberSession()) {
+        if (!findMemberSession(request)) {
             throw new EmailNotFoundException("Member email not found");
         }
-        if (findMemberSession() && !findMemberAccessLevel(20)) {
+        if (findMemberSession(request) && !findMemberAccessLevel(20)) {
             throw new NotEligiblePageException("You're not eligible to access this page");
         }
-        if (findMemberSession() && findMemberAccessLevel(20)) {
+        if (findMemberSession(request) && findMemberAccessLevel(20)) {
 
             Book foundBook = findBookByTitle(updateShelveRequest.getCurrentBookTitle());
             if (foundBook == null) {
@@ -200,15 +212,15 @@ public class ShelveServiceImpl implements ShelveService {
 
 
     @Override
-    public UpdateShelveResponse setBookUnavailableInShelve(UpdateShelveRequest updateShelveRequest, String title) {
+    public UpdateShelveResponse setBookUnavailableInShelve(UpdateShelveRequest updateShelveRequest, String title, HttpServletRequest request) {
         UpdateShelveResponse updateBookUnavail = new UpdateShelveResponse();
-        if (!findMemberSession()) {
+        if (!findMemberSession(request)) {
             throw new EmailNotFoundException("Member email not found");
         }
-        if (findMemberSession() && !findMemberAccessLevel(20)) {
+        if (findMemberSession(request) && !findMemberAccessLevel(20)) {
             throw new NotEligiblePageException("You're not eligible to access this page");
         }
-        if (findMemberSession() && findMemberAccessLevel(20)) {
+        if (findMemberSession(request) && findMemberAccessLevel(20)) {
 
             Book foundBook = findBookByTitle(updateShelveRequest.getCurrentBookTitle());
             if (foundBook == null) {

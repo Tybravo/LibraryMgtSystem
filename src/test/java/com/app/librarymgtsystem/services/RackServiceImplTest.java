@@ -123,7 +123,7 @@ class RackServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
-        AddBookResponse savedBookResponse = bookService.addBook(addBookRequest);
+        AddBookResponse savedBookResponse = bookService.addBook(addBookRequest,request);
         assertEquals(savedBookResponse.getBookTitle(), addBookRequest.getBookTitle());
 
         UpdateBookRequest updateBookRequest = new UpdateBookRequest();
@@ -208,7 +208,7 @@ class RackServiceImplTest {
         addShelveRequest.setBookCategory(ShelveType.COMICS);
         addShelveRequest.setBookGenre("Genre GG");
 
-        AddBookResponse addBookResponse = bookService.addBookWithShelve(addBookRequest, addShelveRequest);
+        AddBookResponse addBookResponse = bookService.addBookWithShelve(addBookRequest, addShelveRequest, request);
         assertNotNull(addBookResponse.getId(), "Book ID should not be null");
         assertEquals("Be Intentional GG", addBookResponse.getBookTitle());
         assertEquals("Author Two GG", addBookResponse.getBookAuthor());
@@ -315,7 +315,7 @@ class RackServiceImplTest {
         addShelveRequest.setBookCategory(ShelveType.COMICS);
         addShelveRequest.setBookGenre("Genre GG");
 
-        AddBookResponse addBookResponse = bookService.addBookWithShelve(addBookRequest, addShelveRequest);
+        AddBookResponse addBookResponse = bookService.addBookWithShelve(addBookRequest, addShelveRequest, request);
         assertNotNull(addBookResponse.getId(), "Book ID should not be null");
         assertEquals("Be Intentional GG", addBookResponse.getBookTitle());
         assertEquals("Author Two GG", addBookResponse.getBookAuthor());

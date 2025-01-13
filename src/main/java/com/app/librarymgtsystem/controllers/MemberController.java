@@ -30,9 +30,9 @@ public class MemberController {
             return ResponseEntity.ok(response);
         } catch (EmailCannotBeEmptyException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (EmailExistException e) {
+        } catch (EmailExistException | EmailCannotHaveSpacesException | PasswordCannotHaveSpacesException | EmailCharNotIncludedException e)  {
             return ResponseEntity.badRequest().body(e.getLocalizedMessage());
-        }catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.internalServerError().body("An unexpected error occurred");
         }
     }

@@ -43,9 +43,36 @@ public class MemberServiceImplTest {
         AddMemberRequest request1 = new AddMemberRequest();
         request1.setEmail(null);
         EmailCannotBeEmptyException exception = assertThrows(EmailCannotBeEmptyException.class, () ->
-                memberService.emailCannotBeEmpty(new AddMemberRequest()));
+                memberService.emailCannotBeEmpty(request1));
         assertEquals("Registration Fields cannot be empty", exception.getMessage());
     }
+
+    @Test
+    public void test_That_Registration_Email_Cannot_Cannot_Have_Spaces() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
+        AddMemberRequest request1 = new AddMemberRequest();
+        request1.setEmail("twine bravo@gmail.com");
+        EmailCannotHaveSpacesException exception = assertThrows(EmailCannotHaveSpacesException.class, () ->
+                memberService.emailCannotHaveSpace(request1));
+        assertEquals("Email cannot have spaces", exception.getMessage());
+    }
+
+    @Test
+    public void test_That_Registration_Password_Cannot_Have_Spaces() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
+        AddMemberRequest request1 = new AddMemberRequest();
+        request1.setPassword("ty bravo");
+        PasswordCannotHaveSpacesException exception = assertThrows(PasswordCannotHaveSpacesException.class, () ->
+                memberService.passwordCannotHaveSpace(request1));
+        assertEquals("Password cannot have spaces", exception.getMessage());
+    }
+
 
     @Test
     public void test_That_Registration_Email_Must_Include_Email_Characters() {
@@ -56,8 +83,8 @@ public class MemberServiceImplTest {
         request.setPhoneNumber("07032819318");
         request.setAddress("No. 34, Sabo, Yaba, Lagos.");
 
-        EmailCannotBeEmptyException exception = assertThrows(EmailCannotBeEmptyException.class, () ->
-                memberService.emailCannotBeEmpty(request));
+        EmailCharNotIncludedException exception = assertThrows(EmailCharNotIncludedException.class, () ->
+                memberService.emailCharNotIncluded(request));
         assertEquals("You forgot to include a character in Email", exception.getMessage());
     }
 
@@ -209,7 +236,7 @@ public class MemberServiceImplTest {
         loginRequest.setPassword(null);
 
         LoginMemberException exception = assertThrows(LoginMemberException.class, () ->
-                memberService.loginMember(loginRequest, (HttpServletRequest) request));
+                memberService.loginMember(loginRequest, request));
         assertEquals("Email or Password cannot be empty", exception.getMessage());
     }
 

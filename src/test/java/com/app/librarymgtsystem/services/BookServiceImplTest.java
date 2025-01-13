@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.web.filter.RequestContextFilter;
 
 import java.util.Optional;
 
@@ -36,6 +37,8 @@ class BookServiceImplTest {
         BookService bookService;
         @Autowired
         ShelveRepository shelveRepository;
+    @Autowired
+    private RequestContextFilter requestContextFilter;
 
     @BeforeEach
         void eraseAll() {
@@ -67,12 +70,16 @@ class BookServiceImplTest {
         MemberServiceImpl.LoggedInUserContext.clear();
 
         NotInSessionException exception = assertThrows(NotInSessionException.class, () ->
-                bookService.findMemberSession());
+                bookService.findMemberSession(request));
         assertEquals("Not in session or currently logged out!", exception.getMessage());
         }
 
     @Test
     public void test_That_Email_Not_Found_Cannot_Get_Member_Into_Session() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
+
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Ade Bravo");
         addMemberRequest.setEmail("twinebravo@gmail.com");
@@ -84,16 +91,23 @@ class BookServiceImplTest {
         AddMemberResponse response = memberService.registerMember(addMemberRequest);
         assertEquals("Registration successful", response.getRegMsg());
 
-        String nonExistEmail = "bravo@gmail.com";
-        MemberServiceImpl.LoggedInUserContext.setSessionEmail(nonExistEmail);
+        String sessionEmailMember = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailMember);
+        System.out.println("Session email: " + session.getAttribute("userEmail"));
 
         EmailNotFoundException exception = assertThrows(EmailNotFoundException.class, () ->
-                bookService.findMemberSession());
+                bookService.findMemberSession(request));
         assertEquals("Member email not found", exception.getMessage());
     }
 
     @Test
     public void test_That_Member_Is_Not_Yet_Inside_Session_Or_Is_Logged_Out() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
+        when(request.getSession()).thenReturn(session);
+
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Ade Bravo");
         addMemberRequest.setEmail("twinebravo@gmail.com");
@@ -119,13 +133,22 @@ class BookServiceImplTest {
         memberSession.setSessionToken("6763gge-736hd-632g4-fyu3562-f56hr3");
         memberSession.setSessionStatus(false);
         memberRepository.save(memberSession);
+
+        String sessionEmailMember = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailMember);
+
         NotInSessionException exception = assertThrows(NotInSessionException.class, () ->
-                bookService.findMemberSession());
+                bookService.findMemberSession(request));
         assertEquals("Membership account is out of session", exception.getMessage());
     }
 
     @Test
-    public void test_That_Member_Not_In_Session_Cannot_Add_Book() {
+    public void test_That_Member_Not_Inside_Session_Cannot_Add_Book() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+         when(request.getSession()).thenReturn(session);
+
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Ade Bravo");
         addMemberRequest.setEmail("twinebravo@gmail.com");
@@ -137,16 +160,24 @@ class BookServiceImplTest {
         AddMemberResponse response = memberService.registerMember(addMemberRequest);
         assertEquals("Registration successful", response.getRegMsg());
 
-        AddBookRequest addbookRequest = new AddBookRequest();
-        addbookRequest.setSessionStatus(false);
+        AddBookRequest addBookRequest = new AddBookRequest();
+        addBookRequest.setSessionStatus(false);
+
+        String sessionEmailMember = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailMember);
 
         NotInSessionException exception = assertThrows(NotInSessionException.class, () ->
-                bookService.addBook(addbookRequest));
+                bookService.addBook(addBookRequest, request));
         assertEquals("Not in session or currently logged out!", exception.getMessage());
         }
 
     @Test
     public void test_That_Librarian_Not_In_Session_Cannot_Add_Book_With_Shelve() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -164,7 +195,7 @@ class BookServiceImplTest {
         addShelveRequest.setSessionStatus(false);
 
         NotInSessionException exception = assertThrows(NotInSessionException.class, () ->
-                bookService.addBookWithShelve(addbookRequest, addShelveRequest));
+                bookService.addBookWithShelve(addbookRequest, addShelveRequest, request));
         assertEquals("Not in session or currently logged out!", exception.getMessage());
     }
 
@@ -172,6 +203,7 @@ class BookServiceImplTest {
     public void test_That_Title_Author_ISBN_Of_Book_Cannot_Be_Empty(){
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -191,9 +223,12 @@ class BookServiceImplTest {
         loginRequest.setEmail("durayg2000@yahoo.com");
         loginRequest.setPassword("greatness");
         Member getResponse = memberService.loginMember(loginRequest, request);
-
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
+
+        String sessionEmailLibrarian= addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
 
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional");
@@ -202,7 +237,7 @@ class BookServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(getResponse.getAccessLevel());
-        AddBookResponse bookResponse = bookService.addBook(addBookRequest);
+        AddBookResponse bookResponse = bookService.addBook(addBookRequest, request);
         assertEquals(bookResponse.getBookTitle(), addBookRequest.getBookTitle());
 
         AddBookRequest addEmptyBook = new AddBookRequest();
@@ -214,7 +249,7 @@ class BookServiceImplTest {
                 bookService.bookCannotBeEmpty(addEmptyBook));
         assertEquals("Book detail cannot be empty!", exception.getMessage());
         BookCannotBeEmptyException exception2 = assertThrows(BookCannotBeEmptyException.class, () ->
-                bookService.addBook(addEmptyBook));
+                bookService.addBook(addEmptyBook, request));
         assertEquals("Book detail cannot be empty!", exception2.getMessage());
     }
 
@@ -222,6 +257,7 @@ class BookServiceImplTest {
     public void test_That_Member_Inside_Session_Cannot_Add_Book_Using_Wrong_Access_Level() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         AddMemberRequest addMemberRequest = new AddMemberRequest();
@@ -242,12 +278,16 @@ class BookServiceImplTest {
         assertEquals("twinebravo@gmail.com", getResponse.getEmail());
         assertEquals("tybravo", getResponse.getPassword());
 
+        String sessionEmailMember= addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailMember);
+
         AddBookRequest addbookRequest = new AddBookRequest();
         addbookRequest.setSessionStatus(true);
         addbookRequest.setAccessLevel(getResponse.getAccessLevel());
 
         NotEligiblePageException exception = assertThrows(NotEligiblePageException.class, () ->
-                bookService.addBook(addbookRequest));
+                bookService.addBook(addbookRequest, request));
         assertEquals("You're not eligible to access this page", exception.getMessage());
         }
 
@@ -255,6 +295,7 @@ class BookServiceImplTest {
     public void test_That_Member_Inside_Session_Cannot_Add_Book_With_Shelve_Using_Wrong_Access_Level() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         AddMemberRequest addMemberRequest = new AddMemberRequest();
@@ -275,6 +316,10 @@ class BookServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian= addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addbookRequest = new AddBookRequest();
         addbookRequest.setSessionStatus(true);
         addbookRequest.setAccessLevel(getResponse.getAccessLevel());
@@ -282,7 +327,7 @@ class BookServiceImplTest {
         addShelveRequest.setSessionStatus(true);
 
         NotEligiblePageException exception = assertThrows(NotEligiblePageException.class, () ->
-                bookService.addBookWithShelve(addbookRequest, addShelveRequest));
+                bookService.addBookWithShelve(addbookRequest, addShelveRequest, request));
         assertEquals("You're not eligible to access this page", exception.getMessage());
     }
 
@@ -290,6 +335,7 @@ class BookServiceImplTest {
     public void test_That_Librarian_Inside_Session_Can_Add_Book_Using_Right_Access_Level() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -311,6 +357,10 @@ class BookServiceImplTest {
         Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
+
+        String sessionEmailLibrarian= addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
 
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional A");
@@ -320,7 +370,7 @@ class BookServiceImplTest {
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(getResponse.getAccessLevel());
 
-        AddBookResponse bookResponse = bookService.addBook(addBookRequest);
+        AddBookResponse bookResponse = bookService.addBook(addBookRequest, request);
         assertEquals(bookResponse.getBookTitle(), addBookRequest.getBookTitle());
         assertEquals("Book added successfully", bookResponse.getAddBookMsg());
         }
@@ -329,6 +379,7 @@ class BookServiceImplTest {
     public void test_That_Librarian_Cannot_Add_Book_With_Same_Book_Title_And_Author(){
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -351,6 +402,10 @@ class BookServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian= addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional B");
         addBookRequest.setBookAuthor("Author One B");
@@ -358,7 +413,7 @@ class BookServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(getResponse.getAccessLevel());
-        AddBookResponse bookRequest = bookService.addBook(addBookRequest);
+        AddBookResponse bookRequest = bookService.addBook(addBookRequest,request);
         assertEquals(bookRequest.getBookTitle(), addBookRequest.getBookTitle());
 
         AddBookRequest addBookAgain = new AddBookRequest();
@@ -369,7 +424,7 @@ class BookServiceImplTest {
                 bookService.bookAlreadyExist(addBookAgain));
         assertEquals("Book already exist! Adjust title or author", exception.getMessage());
         BookExistException exception1 = assertThrows(BookExistException.class, () ->
-                bookService.addBook(addBookAgain));
+                bookService.addBook(addBookAgain, request));
         assertEquals("Book already exist! Adjust title or author", exception1.getMessage());
         }
 
@@ -377,6 +432,7 @@ class BookServiceImplTest {
     public void test_That_Librarian_Cannot_Add_Book_With_Same_ISBN(){
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -398,6 +454,10 @@ class BookServiceImplTest {
         Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
+
+        String sessionEmailLibrarian= addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
 
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional C");
@@ -406,14 +466,14 @@ class BookServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(getResponse.getAccessLevel());
-        AddBookResponse bookRequest = bookService.addBook(addBookRequest);
+        AddBookResponse bookRequest = bookService.addBook(addBookRequest, request);
         assertEquals(bookRequest.getBookTitle(), addBookRequest.getBookTitle());
 
         AddBookRequest addIsbnBookAgain = new AddBookRequest();
         addIsbnBookAgain.setBookIsbn("rw63829wz-C");
 
         BookExistException exception = assertThrows(BookExistException.class, () ->
-                bookService.addBook(addIsbnBookAgain));
+                bookService.addBook(addIsbnBookAgain, request));
         assertEquals("ISBN already exist!", exception.getMessage());
         }
 
@@ -421,6 +481,7 @@ class BookServiceImplTest {
     public void test_That_Book_Can_Be_Found_By_Id() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -443,6 +504,10 @@ class BookServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian= addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional D");
         addBookRequest.setBookAuthor("Author One D");
@@ -450,7 +515,7 @@ class BookServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
-        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
         assertEquals(savedBookRequest.getBookTitle(), addBookRequest.getBookTitle());
 
         assertNotNull(savedBookRequest.getId(), "Generated Book Id is gotten");
@@ -465,6 +530,7 @@ class BookServiceImplTest {
     public void test_That_Book_Id_And_FICTION_Category_Can_Be_Saved_Into_Book_Shelve_Using_addBook_method() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -487,6 +553,10 @@ class BookServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian= addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional E");
         addBookRequest.setBookAuthor("Author One E");
@@ -494,7 +564,7 @@ class BookServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
-        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
         assertEquals(savedBookRequest.getBookTitle(), addBookRequest.getBookTitle());
 
         assertNotNull(savedBookRequest.getId(), "Generated Book Id is gotten");
@@ -524,6 +594,7 @@ class BookServiceImplTest {
     public void test_That_Book_Id_And_POETRY_Category_Can_Be_Saved_Into_Shelve(){
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -546,6 +617,10 @@ class BookServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian= addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional F");
         addBookRequest.setBookAuthor("Author Two F");
@@ -553,7 +628,7 @@ class BookServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
-        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
         assertEquals(savedBookRequest.getBookTitle(), addBookRequest.getBookTitle());
 
         assertNotNull(savedBookRequest.getId(), "Generated Book Id is gotten");
@@ -583,6 +658,7 @@ class BookServiceImplTest {
     public void test_That_Book_Id_And_EDUCATION_Category_Can_Be_Saved_Into_Book_Shelve_Using_addBookWithShelve_method() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member member = new Member();
@@ -605,6 +681,10 @@ class BookServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian= member.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional FF");
         addBookRequest.setBookAuthor("Author Two FF");
@@ -615,7 +695,7 @@ class BookServiceImplTest {
         addShelveRequest.setBookCategory(ShelveType.EDUCATION);
         addShelveRequest.setBookGenre("Genre FF");
 
-        AddBookResponse addBookResponse = bookService.addBookWithShelve(addBookRequest, addShelveRequest);
+        AddBookResponse addBookResponse = bookService.addBookWithShelve(addBookRequest, addShelveRequest, request);
         assertNotNull(addBookResponse.getId(), "Book ID should not be null");
         assertEquals("Be Intentional FF", addBookResponse.getBookTitle());
         assertEquals("Author Two FF", addBookResponse.getBookAuthor());
@@ -636,6 +716,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Librarian_Not_Inside_Session_Cannot_Update_Book() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -653,8 +737,13 @@ class BookServiceImplTest {
         updateBookRequest.setSessionStatus(false);
         String title = updateBookRequest.getCurrentBookTitle();
 
+        String sessionEmailLibrarian= addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+        System.out.println("Session email: " + session.getAttribute("userEmail"));
+
         NotInSessionException exception = assertThrows(NotInSessionException.class, () ->
-                bookService.updateBookByTitle(updateBookRequest, title));
+                bookService.updateBookByTitle(updateBookRequest, title, request));
         assertEquals("Not in session or currently logged out!", exception.getMessage());
         }
 
@@ -662,6 +751,7 @@ class BookServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_Update_Book_Using_Wrong_Access_Level() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -684,13 +774,17 @@ class BookServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian= addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         UpdateBookRequest updateBookRequest = new UpdateBookRequest();
         updateBookRequest.setSessionStatus(true);
         updateBookRequest.setAccessLevel(getResponse.getAccessLevel());
         String title = updateBookRequest.getCurrentBookTitle();
 
         NotEligiblePageException exception = assertThrows(NotEligiblePageException.class, () ->
-                bookService.updateBookByTitle(updateBookRequest, title));
+                bookService.updateBookByTitle(updateBookRequest, title, request));
         assertEquals("You're not eligible to access this page", exception.getMessage());
         }
 
@@ -698,6 +792,7 @@ class BookServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_Update_Book_If_Input_Book_Title_Not_found(){
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -720,6 +815,10 @@ class BookServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian= addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional G");
         addBookRequest.setBookAuthor("Author Two G");
@@ -727,7 +826,7 @@ class BookServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
-        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
         assertEquals(savedBookRequest.getBookTitle(), addBookRequest.getBookTitle());
 
         UpdateBookRequest updateBookRequest = new UpdateBookRequest();
@@ -741,7 +840,7 @@ class BookServiceImplTest {
         String title = updateBookRequest.getCurrentBookTitle();
 
         BookNotFoundException exception = assertThrows(BookNotFoundException.class, () ->
-                bookService.updateBookByTitle(updateBookRequest, title));
+                bookService.updateBookByTitle(updateBookRequest, title, request));
         assertEquals("Book with the title '" + updateBookRequest.getCurrentBookTitle() + "' not found", exception.getMessage());
     }
 
@@ -749,7 +848,9 @@ class BookServiceImplTest {
     public void test_That_Librarian_Inside_Session_Can_Add_Book_Again_Using_Right_Access_Level() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
+
 
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
@@ -770,6 +871,10 @@ class BookServiceImplTest {
         Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
+
+        String sessionEmailLibrarian= addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
 
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional H");
@@ -779,7 +884,7 @@ class BookServiceImplTest {
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(getResponse.getAccessLevel());
 
-        AddBookResponse bookResponse = bookService.addBook(addBookRequest);
+        AddBookResponse bookResponse = bookService.addBook(addBookRequest, request);
         assertEquals(bookResponse.getBookTitle(), addBookRequest.getBookTitle());
         assertEquals("Book added successfully", bookResponse.getAddBookMsg());
     }
@@ -788,6 +893,7 @@ class BookServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_Update_Book_By_Book_Title_If_Is_Not_Available() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -809,6 +915,10 @@ class BookServiceImplTest {
         Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
+
+        String sessionEmailLibrarian= addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
 
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional GG");
@@ -820,7 +930,7 @@ class BookServiceImplTest {
         addShelveRequest.setBookCategory(ShelveType.COMICS);
         addShelveRequest.setBookGenre("Genre GG");
 
-        AddBookResponse addBookResponse = bookService.addBookWithShelve(addBookRequest, addShelveRequest);
+        AddBookResponse addBookResponse = bookService.addBookWithShelve(addBookRequest, addShelveRequest, request);
         assertNotNull(addBookResponse.getId(), "Book ID should not be null");
         assertEquals("Be Intentional GG", addBookResponse.getBookTitle());
         assertEquals("Author Two GG", addBookResponse.getBookAuthor());
@@ -860,7 +970,7 @@ class BookServiceImplTest {
         String title = updateBookRequest.getCurrentBookTitle();
 
         BookInShelveNotAvailableException exception = assertThrows(BookInShelveNotAvailableException.class, () ->
-                bookService.updateBookByTitle(updateBookRequest, title));
+                bookService.updateBookByTitle(updateBookRequest, title, request));
         assertEquals("Book is currently not available in the shelve", exception.getMessage());
         }
 
@@ -868,6 +978,7 @@ class BookServiceImplTest {
     public void test_That_Librarian_Inside_Session_Can_Update_Book_By_Book_Title_If_Is_Available() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -890,6 +1001,10 @@ class BookServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian= addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional GG");
         addBookRequest.setBookAuthor("Author Two GG");
@@ -900,7 +1015,7 @@ class BookServiceImplTest {
         addShelveRequest.setBookCategory(ShelveType.COMICS);
         addShelveRequest.setBookGenre("Genre GG");
 
-        AddBookResponse addBookResponse = bookService.addBookWithShelve(addBookRequest, addShelveRequest);
+        AddBookResponse addBookResponse = bookService.addBookWithShelve(addBookRequest, addShelveRequest, request);
         assertNotNull(addBookResponse.getId(), "Book ID should not be null");
         assertEquals("Be Intentional GG", addBookResponse.getBookTitle());
         assertEquals("Author Two GG", addBookResponse.getBookAuthor());
@@ -928,7 +1043,7 @@ class BookServiceImplTest {
         updateBookRequest.setAccessLevel(20);
         String title = updateBookRequest.getCurrentBookTitle();
 
-        UpdateBookResponse updateBookResponse = bookService.updateBookByTitle(updateBookRequest, title);
+        UpdateBookResponse updateBookResponse = bookService.updateBookByTitle(updateBookRequest, title, request);
         assertEquals("Book updated successfully", updateBookResponse.getUpdateBookMsg());
         assertEquals("Be Intentional G2", updateBookResponse.getBookTitle());
         assertEquals("Author Two G2", updateBookResponse.getBookAuthor());
@@ -944,6 +1059,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Librarian_Not_In_Session_Cannot_View_All_Books_For_Librarian() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -961,12 +1080,16 @@ class BookServiceImplTest {
         viewBookResponse.setSessionStatus(false);
 
         NotInSessionException exception = assertThrows(NotInSessionException.class, () ->
-                bookService.viewBookByAll(0,10));
+                bookService.viewBookByAll(0,10, request));
         assertEquals("Not in session or currently logged out!", exception.getMessage());
     }
 
     @Test
     public void test_That_Member_Not_In_Session_Cannot_View_All_Books_For_Member() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Ade Bravo");
         addMemberRequest.setEmail("twinebravo@gmail.com");
@@ -984,7 +1107,7 @@ class BookServiceImplTest {
         viewBookResponse.setSessionStatus(false);
 
         NotInSessionException exception = assertThrows(NotInSessionException.class, () ->
-                bookService.viewBookByAllForMembers(0,10));
+                bookService.viewBookByAllForMembers(0,10, request));
         assertEquals("Not in session or currently logged out!", exception.getMessage());
     }
 
@@ -992,6 +1115,7 @@ class BookServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_View_All_Books_For_Librarian_Using_Wrong_Access_Level() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -1014,12 +1138,16 @@ class BookServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian= addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         ViewBookResponse viewBookResponse = new ViewBookResponse();
         viewBookResponse.setSessionStatus(true);
         viewBookResponse.setAccessLevel(getResponse.getAccessLevel());
 
         NotEligiblePageException exception = assertThrows(NotEligiblePageException.class, () ->
-                bookService.viewBookByAll(0, 10));
+                bookService.viewBookByAll(0, 10, request));
         assertEquals("You're not eligible to access this page", exception.getMessage());
     }
 
@@ -1027,6 +1155,7 @@ class BookServiceImplTest {
     public void test_That_Member_Inside_Session_Cannot_View_All_Books_For_Member_Using_Wrong_Access_Level() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -1049,12 +1178,16 @@ class BookServiceImplTest {
         assertEquals("twinebravo@gmail.com", getResponse.getEmail());
         assertEquals("tybravo", getResponse.getPassword());
 
+        String sessionEmailMember = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailMember);
+
         ViewBookResponse viewBookResponse = new ViewBookResponse();
         viewBookResponse.setSessionStatus(true);
         viewBookResponse.setAccessLevel(getResponse.getAccessLevel());
 
         NotEligiblePageException exception = assertThrows(NotEligiblePageException.class, () ->
-                bookService.viewBookByAllForMembers(0, 10));
+                bookService.viewBookByAllForMembers(0, 10, request));
         assertEquals("You're not eligible to access this page", exception.getMessage());
     }
 
@@ -1062,6 +1195,7 @@ class BookServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_View_All_Book_For_Librarian_Inside_Empty_Book_Repo(){
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -1084,10 +1218,14 @@ class BookServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian= addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         bookRepository.deleteAll();
 
         BookNotFoundException exception = assertThrows(BookNotFoundException.class, () ->
-                bookService.viewBookByAll(0,10));
+                bookService.viewBookByAll(0,10, request));
         assertEquals("Book shelve is currently empty", exception.getMessage());
     }
 
@@ -1095,6 +1233,7 @@ class BookServiceImplTest {
     public void test_That_Member_Inside_Session_Cannot_View_All_Book_For_Member_Inside_Empty_Book_Repo(){
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -1117,10 +1256,14 @@ class BookServiceImplTest {
         assertEquals("twinebravo@gmail.com", getResponse.getEmail());
         assertEquals("tybravo", getResponse.getPassword());
 
+        String sessionEmailMember = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailMember);
+
         bookRepository.deleteAll();
 
         BookNotFoundException exception = assertThrows(BookNotFoundException.class, () ->
-                bookService.viewBookByAllForMembers(0,10));
+                bookService.viewBookByAllForMembers(0,10, request));
         assertEquals("Book shelve is currently empty", exception.getMessage());
     }
 
@@ -1128,6 +1271,7 @@ class BookServiceImplTest {
     public void test_That_Librarian_Inside_Session_Can_View_All_Books_For_Librarian() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -1148,6 +1292,10 @@ class BookServiceImplTest {
         assertEquals("greatness", getResponse.getPassword());
         assertTrue(getResponse.isSessionStatus());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         for (int addUpBook = 1; addUpBook <= 10; addUpBook++) {
             AddBookRequest addBookRequest = new AddBookRequest();
             addBookRequest.setBookTitle("Be Intentional " + addUpBook);
@@ -1156,13 +1304,13 @@ class BookServiceImplTest {
             addBookRequest.setBookDescription("Characterized by conscious design or purpose " + addUpBook);
             addBookRequest.setSessionStatus(true);
             addBookRequest.setAccessLevel(20);
-            AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+            AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
             assertEquals("Be Intentional " + addUpBook, savedBookRequest.getBookTitle());
         }
 
         int page = 0;
         int size = 4;
-        ViewBookResponse viewBookResponse = bookService.viewBookByAll(page, size);
+        ViewBookResponse viewBookResponse = bookService.viewBookByAll(page, size, request);
 
         assertEquals("Books retrieved successfully", viewBookResponse.getViewBookMsg());
         assertEquals(4, viewBookResponse.getBooks().size()); // 4 books on the first page
@@ -1184,6 +1332,7 @@ class BookServiceImplTest {
     public void test_That_Member_Inside_Session_Can_View_All_Books_For_Member() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -1204,6 +1353,10 @@ class BookServiceImplTest {
         assertEquals("greatness", getResponse.getPassword());
         assertTrue(getResponse.isSessionStatus());
 
+        String sessionEmailLibrarian= addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         for (int addUpBook = 1; addUpBook <= 10; addUpBook++) {
             AddBookRequest addBookRequest = new AddBookRequest();
             addBookRequest.setBookTitle("Be Intentional " + addUpBook);
@@ -1212,7 +1365,7 @@ class BookServiceImplTest {
             addBookRequest.setBookDescription("Characterized by conscious design or purpose " + addUpBook);
             addBookRequest.setSessionStatus(true);
             addBookRequest.setAccessLevel(20);
-            AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+            AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
             assertEquals("Be Intentional " + addUpBook, savedBookRequest.getBookTitle());
         }
 
@@ -1234,13 +1387,17 @@ class BookServiceImplTest {
         loginRequest1.setEmail("twinebravo@gmail.com");
         loginRequest1.setPassword("tybravo");
         //loginRequest1.setSessionStatus(true);
-        Member getResponse1 = memberService.loginMember(loginRequest1, (HttpServletRequest) request);
+        Member getResponse1 = memberService.loginMember(loginRequest1, request);
         assertEquals("twinebravo@gmail.com", getResponse1.getEmail());
         assertEquals("tybravo", getResponse1.getPassword());
 
+        String sessionEmailMember= addMemberRequest1.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailMember);
+
         int page = 0;
         int size = 4;
-        ViewBookResponse viewBookResponse = bookService.viewBookByAllForMembers(page, size);
+        ViewBookResponse viewBookResponse = bookService.viewBookByAllForMembers(page, size, request);
 
         assertEquals("Books retrieved successfully", viewBookResponse.getViewBookMsg());
         assertEquals(4, viewBookResponse.getBooks().size()); // 4 books on the first page
@@ -1260,6 +1417,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Librarian_Not_In_Session_Cannot_View_Book_By_Title() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -1277,12 +1438,16 @@ class BookServiceImplTest {
         viewBookResponse.setSessionStatus(false);
 
         NotInSessionException exception = assertThrows(NotInSessionException.class, () ->
-                bookService.viewBookByTitle("Be Intentional 2"));
+                bookService.viewBookByTitle("Be Intentional 2", request));
         assertEquals("Not in session or currently logged out!", exception.getMessage());
     }
 
     @Test
     public void test_That_Member_Not_In_Session_Cannot_View_Book_By_Title_For_Members() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Ade Bravo");
         addMemberRequest.setEmail("twinebravo@gmail.com");
@@ -1299,7 +1464,7 @@ class BookServiceImplTest {
         String title = "Be Intentional";
 
         NotInSessionException exception = assertThrows(NotInSessionException.class, () ->
-                bookService.viewBookByTitleForMembers(title));
+                bookService.viewBookByTitleForMembers(title, request));
         assertEquals("Not in session or currently logged out!", exception.getMessage());
     }
 
@@ -1307,6 +1472,7 @@ class BookServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_View_Book_By_Title_Using_Wrong_Access_Level() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -1329,12 +1495,16 @@ class BookServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         ViewBookResponse viewBookResponse = new ViewBookResponse();
         viewBookResponse.setSessionStatus(true);
         viewBookResponse.setAccessLevel(getResponse.getAccessLevel());
 
         NotEligiblePageException exception = assertThrows(NotEligiblePageException.class, () ->
-                bookService.viewBookByTitle("Be Intentional 2"));
+                bookService.viewBookByTitle("Be Intentional 2", request));
         assertEquals("You're not eligible to access this page", exception.getMessage());
     }
 
@@ -1342,6 +1512,7 @@ class BookServiceImplTest {
     public void test_That_Member_Inside_Session_Cannot_View_Book_By_Title_Using_Wrong_Access_Level_For_Member() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -1364,12 +1535,16 @@ class BookServiceImplTest {
         assertEquals("twinebravo@gmail.com", getResponse.getEmail());
         assertEquals("tybravo", getResponse.getPassword());
 
+        String sessionEmailMember= addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailMember);
+
         ViewBookResponse viewBookResponse = new ViewBookResponse();
         viewBookResponse.setSessionStatus(true);
         viewBookResponse.setAccessLevel(getResponse.getAccessLevel());
 
         NotEligiblePageException exception = assertThrows(NotEligiblePageException.class, () ->
-                bookService.viewBookByTitleForMembers("Be Intentional 2"));
+                bookService.viewBookByTitleForMembers("Be Intentional 2", request));
         assertEquals("You're not eligible to access this page", exception.getMessage());
     }
 
@@ -1377,6 +1552,7 @@ class BookServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_View_Non_Existing_Book_By_Title_Inside_Book_Repo(){
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -1399,6 +1575,10 @@ class BookServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian= addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional J");
         addBookRequest.setBookAuthor("Author Two J");
@@ -1406,12 +1586,12 @@ class BookServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose J");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
-        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
         assertEquals(savedBookRequest.getBookTitle(), addBookRequest.getBookTitle());
 
         String findTitleOfBook = "Be Intentional 11";
         BookNotFoundException exception = assertThrows(BookNotFoundException.class, () ->
-                bookService.viewBookByTitle(findTitleOfBook));
+                bookService.viewBookByTitle(findTitleOfBook, request));
         assertEquals("Book with title '" + findTitleOfBook + "' cannot be found.", exception.getMessage());
     }
 
@@ -1419,6 +1599,7 @@ class BookServiceImplTest {
     public void test_That_Member_Inside_Session_Cannot_View_Non_Existing_Book_By_Title_Inside_Book_Repo_For_Members(){
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -1441,6 +1622,10 @@ class BookServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional J");
         addBookRequest.setBookAuthor("Author Two J");
@@ -1448,7 +1633,7 @@ class BookServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose J");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
-        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
         assertEquals(savedBookRequest.getBookTitle(), addBookRequest.getBookTitle());
 
         Member addMemberRequest1 = new Member();
@@ -1474,7 +1659,7 @@ class BookServiceImplTest {
 
         String findTitleOfBook = "Be Intentional 11";
         BookNotFoundException exception = assertThrows(BookNotFoundException.class, () ->
-                bookService.viewBookByTitleForMembers(findTitleOfBook));
+                bookService.viewBookByTitleForMembers(findTitleOfBook, request));
         assertEquals("Book with title '" + findTitleOfBook + "' cannot be found.", exception.getMessage());
     }
 
@@ -1482,6 +1667,7 @@ class BookServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_Find_BookId_Inside_Shelve_Repository(){
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -1504,6 +1690,10 @@ class BookServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional J");
         addBookRequest.setBookAuthor("Author Two J");
@@ -1511,7 +1701,7 @@ class BookServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose J");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
-        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
         assertEquals(savedBookRequest.getBookTitle(), addBookRequest.getBookTitle());
         assertNotNull(savedBookRequest.getId(), "Generated Book Id is gotten");
         assertEquals("Book added successfully", savedBookRequest.getAddBookMsg());
@@ -1525,7 +1715,7 @@ class BookServiceImplTest {
         assertTrue(pullBookRequest.isPresent(), "Book can be found");
 
         ShelveNotFoundException exception = assertThrows(ShelveNotFoundException.class, () ->
-                bookService.viewBookByTitle("Be Intentional J"));
+                bookService.viewBookByTitle("Be Intentional J", request));
         assertEquals("Shelve entry for the book entered not found.", exception.getMessage());
     }
 
@@ -1533,6 +1723,7 @@ class BookServiceImplTest {
     public void test_That_Librarian_Inside_Session_Can_View_Book_By_Title() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -1555,6 +1746,10 @@ class BookServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional 11");
         addBookRequest.setBookAuthor("Author 11");
@@ -1562,7 +1757,7 @@ class BookServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose 11");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
-        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
         assertEquals(savedBookRequest.getBookTitle(), addBookRequest.getBookTitle());
 
         Shelve shelve = new Shelve();
@@ -1573,7 +1768,7 @@ class BookServiceImplTest {
         shelve.setBorrowed(false);
         shelveRepository.save(shelve);
 
-        ViewBookResponse viewBookResponse = bookService.viewBookByTitle("Be Intentional 11");
+        ViewBookResponse viewBookResponse = bookService.viewBookByTitle("Be Intentional 11", request);
         assertEquals("Be Intentional 11", viewBookResponse.getBookTitle());
         assertEquals("Author 11", viewBookResponse.getBookAuthor());
         assertEquals("rw63829wz-11", viewBookResponse.getBookIsbn());
@@ -1590,6 +1785,7 @@ class BookServiceImplTest {
     public void test_That_Member_Inside_Session_Can_View_Book_By_Title_For_Members() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -1612,6 +1808,10 @@ class BookServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional 11");
         addBookRequest.setBookAuthor("Author 11");
@@ -1619,7 +1819,7 @@ class BookServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose 11");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
-        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
         assertEquals(savedBookRequest.getBookTitle(), addBookRequest.getBookTitle());
 
         Shelve shelve = new Shelve();
@@ -1646,12 +1846,15 @@ class BookServiceImplTest {
         LoginRequest loginRequest1 = new LoginRequest();
         loginRequest1.setEmail("twinebravo@gmail.com");
         loginRequest1.setPassword("tybravo");
-        //loginRequest1.setSessionStatus(true);
-        Member getResponse1 = memberService.loginMember(loginRequest1, (HttpServletRequest) request);
+        Member getResponse1 = memberService.loginMember(loginRequest1, request);
         assertEquals("twinebravo@gmail.com", getResponse1.getEmail());
         assertEquals("tybravo", getResponse1.getPassword());
 
-        ViewBookResponse viewBookResponse = bookService.viewBookByTitleForMembers("Be Intentional 11");
+        String sessionEmailMember = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailMember);
+
+        ViewBookResponse viewBookResponse = bookService.viewBookByTitleForMembers("Be Intentional 11", request);
         assertEquals("Be Intentional 11", viewBookResponse.getBookTitle());
         assertEquals("Author 11", viewBookResponse.getBookAuthor());
         assertEquals("Characterized by conscious design or purpose 11", viewBookResponse.getBookDescription());
@@ -1665,6 +1868,10 @@ class BookServiceImplTest {
 
     @Test
     public void test_That_Librarian_Not_In_Session_Cannot_Delete_Book_By_Title() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
         addMemberRequest.setEmail("durayg2000@yahoo.com");
@@ -1682,7 +1889,7 @@ class BookServiceImplTest {
         viewBookResponse.setSessionStatus(false);
 
         NotInSessionException exception = assertThrows(NotInSessionException.class, () ->
-                bookService.deleteBookByTitle("Be Intentional 2"));
+                bookService.deleteBookByTitle("Be Intentional 2", request));
         assertEquals("Not in session or currently logged out!", exception.getMessage());
     }
 
@@ -1690,6 +1897,7 @@ class BookServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_Delete_Book_By_Title_Using_Wrong_Access_Level() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -1712,12 +1920,16 @@ class BookServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         ViewBookResponse viewBookResponse = new ViewBookResponse();
         viewBookResponse.setSessionStatus(true);
         viewBookResponse.setAccessLevel(getResponse.getAccessLevel());
 
         NotEligiblePageException exception = assertThrows(NotEligiblePageException.class, () ->
-                bookService.deleteBookByTitle("Be Intentional 2"));
+                bookService.deleteBookByTitle("Be Intentional 2", request));
         assertEquals("You're not eligible to access this page", exception.getMessage());
     }
 
@@ -1725,6 +1937,7 @@ class BookServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_Delete_Non_Existing_Book_By_Title_Inside_Book_Repo(){
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -1746,6 +1959,10 @@ class BookServiceImplTest {
         Member getResponse = memberService.loginMember(loginRequest, request);
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
+
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
 
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional J");
@@ -1754,12 +1971,12 @@ class BookServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose J");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
-        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
         assertEquals(savedBookRequest.getBookTitle(), addBookRequest.getBookTitle());
 
         String findTitleOfBook = "Be Intentional 11";
         BookNotFoundException exception = assertThrows(BookNotFoundException.class, () ->
-                bookService.viewBookByTitle(findTitleOfBook));
+                bookService.viewBookByTitle(findTitleOfBook, request));
         assertEquals("Book with title '" + findTitleOfBook + "' cannot be found.", exception.getMessage());
     }
 
@@ -1767,6 +1984,7 @@ class BookServiceImplTest {
     public void test_That_Librarian_Inside_Session_Cannot_Delete_Book_By_Title_If_Is_Not_Set_Available() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -1789,6 +2007,10 @@ class BookServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional 11");
         addBookRequest.setBookAuthor("Author 11");
@@ -1796,7 +2018,7 @@ class BookServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose 11");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
-        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
         assertEquals(savedBookRequest.getBookTitle(), addBookRequest.getBookTitle());
 
         AddBookRequest addBookRequest1 = new AddBookRequest();
@@ -1806,7 +2028,7 @@ class BookServiceImplTest {
         addBookRequest1.setBookDescription("Characterized by conscious design or purpose 22");
         addBookRequest1.setSessionStatus(true);
         addBookRequest1.setAccessLevel(20);
-        AddBookResponse savedBookRequest1 = bookService.addBook(addBookRequest1);
+        AddBookResponse savedBookRequest1 = bookService.addBook(addBookRequest1, request);
         assertEquals(savedBookRequest1.getBookTitle(), addBookRequest1.getBookTitle());
 
         Shelve shelve = new Shelve();
@@ -1828,7 +2050,7 @@ class BookServiceImplTest {
         assertEquals("Genre 22", shelve1.getGenre());
 
         BookInShelveNotAvailableException exception = assertThrows(BookInShelveNotAvailableException.class, () ->
-                bookService.deleteBookByTitle("Be Intentional 11"));
+                bookService.deleteBookByTitle("Be Intentional 11", request));
         assertEquals("Book is currently not available in the shelve", exception.getMessage());
     }
 
@@ -1836,6 +2058,7 @@ class BookServiceImplTest {
     public void test_That_Librarian_Inside_Session_Can_Delete_Book_By_Title_If_Is_Set_Available() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
         when(request.getSession()).thenReturn(session);
 
         Member addMemberRequest = new Member();
@@ -1858,6 +2081,10 @@ class BookServiceImplTest {
         assertEquals("durayg2000@yahoo.com", getResponse.getEmail());
         assertEquals("greatness", getResponse.getPassword());
 
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
+
         AddBookRequest addBookRequest = new AddBookRequest();
         addBookRequest.setBookTitle("Be Intentional 11");
         addBookRequest.setBookAuthor("Author 11");
@@ -1865,7 +2092,7 @@ class BookServiceImplTest {
         addBookRequest.setBookDescription("Characterized by conscious design or purpose 11");
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
-        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest);
+        AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
         assertEquals(savedBookRequest.getBookTitle(), addBookRequest.getBookTitle());
 
         AddBookRequest addBookRequest1 = new AddBookRequest();
@@ -1875,7 +2102,7 @@ class BookServiceImplTest {
         addBookRequest1.setBookDescription("Characterized by conscious design or purpose 22");
         addBookRequest1.setSessionStatus(true);
         addBookRequest1.setAccessLevel(20);
-        AddBookResponse savedBookRequest1 = bookService.addBook(addBookRequest1);
+        AddBookResponse savedBookRequest1 = bookService.addBook(addBookRequest1, request);
         assertEquals(savedBookRequest1.getBookTitle(), addBookRequest1.getBookTitle());
 
         Shelve shelve = new Shelve();
@@ -1896,7 +2123,7 @@ class BookServiceImplTest {
         shelveRepository.save(shelve1);
         assertEquals("Genre 22", shelve1.getGenre());
 
-        DeleteBookResponse deletedBookResponse = bookService.deleteBookByTitle("Be Intentional 11");
+        DeleteBookResponse deletedBookResponse = bookService.deleteBookByTitle("Be Intentional 11", request);
         assertNotNull(deletedBookResponse);
         assertEquals("Book deleted successfully", deletedBookResponse.getDeleteBookMsg());
 

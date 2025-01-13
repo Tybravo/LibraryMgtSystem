@@ -15,11 +15,17 @@ public interface MemberService {
 
     Member findMemberByEmail(String emailAddy);
 
+    void emailCannotHaveSpace(AddMemberRequest addMemberRequest);
+
+    void passwordCannotHaveSpace(AddMemberRequest addMemberRequest);
+
     AddMemberResponse registerMember(AddMemberRequest addMemberRequest);
 
     void emailAlreadyExists(AddMemberRequest addMemberRequest);
 
     void emailCannotBeEmpty(AddMemberRequest addMemberRequest);
+
+    void emailCharNotIncluded(AddMemberRequest addMemberRequest);
 
     Member alreadyInSession(LoginRequest loginRequest);
 
