@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.math.BigDecimal;
 
 
 @Controller
@@ -35,8 +36,13 @@ public class BookController {
 
     @PostMapping("/addBook")
     public ResponseEntity<?> addBook(@RequestBody AddBookRequest addBookRequest, HttpServletRequest request) {
+        if (addBookRequest.getBookPrice() == null) {
+            addBookRequest.setBookPrice(BigDecimal.ZERO); // Default to 0 if not provided
+        }
+        System.out.println("Book Price in Controller: " + addBookRequest.getBookPrice()); // Debugging line
         try {
             AddBookResponse response = bookService.addBook(addBookRequest, request);
+            System.out.println("Book Price in Response: " + response.getBookPrice()); // Debugging line
             return ResponseEntity.ok(response);
         } catch (BookCannotBeEmptyException | BookExistException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -46,6 +52,7 @@ public class BookController {
             return ResponseEntity.internalServerError().body("An unexpected error occurred");
         }
     }
+
 
 
 

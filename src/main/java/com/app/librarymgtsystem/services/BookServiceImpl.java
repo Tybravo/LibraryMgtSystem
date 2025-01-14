@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -91,7 +92,8 @@ public class BookServiceImpl implements BookService {
         if (addBookRequest.getBookTitle() == null || addBookRequest.getBookTitle().isEmpty() ||
                 addBookRequest.getBookAuthor() == null || addBookRequest.getBookAuthor().isEmpty() ||
                 addBookRequest.getBookIsbn() == null || addBookRequest.getBookIsbn().isEmpty() ||
-                addBookRequest.getBookDescription() == null || addBookRequest.getBookDescription().isEmpty()) {
+                addBookRequest.getBookDescription() == null || addBookRequest.getBookDescription().isEmpty() ||
+                addBookRequest.getBookPrice() == null || addBookRequest.getBookPrice().compareTo(BigDecimal.ZERO) <=0 ){
             throw new BookCannotBeEmptyException("Book detail cannot be empty!");
         }
     }
@@ -122,6 +124,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public AddBookResponse addBook(AddBookRequest addBookRequest, HttpServletRequest request) {
         AddBookResponse addBookResponse = new AddBookResponse();
+        addBookResponse.setBookPrice(addBookRequest.getBookPrice());
          bookCannotBeEmpty(addBookRequest);
         if (findMemberSession(request) && !findMemberAccessLevel(20)) {
             throw new NotEligiblePageException("You're not eligible to access this page");
@@ -141,7 +144,8 @@ public class BookServiceImpl implements BookService {
                 book.setDescription(addBookRequest.getBookDescription());
                 book.setLink(addBookRequest.getBookLink());
                 book.setCurrency(addBookRequest.getBookCurrency());
-                //book.setPrice(addBookRequest.getBookPrice());
+//                book.setPrice(BigDecimal.ZERO);
+                book.setPrice(addBookRequest.getBookPrice());
                 book.setQuantity(addBookRequest.getBookQuantity());
                 book.setCreationDate(LocalDateTime.now());
                 bookRepository.save(book);
