@@ -1,22 +1,30 @@
 package com.app.librarymgtsystem.controllers;
 
+import com.app.librarymgtsystem.data.models.Member;
 import com.app.librarymgtsystem.dtos.requests.AddMemberRequest;
 import com.app.librarymgtsystem.dtos.requests.LoginRequest;
 import com.app.librarymgtsystem.dtos.requests.LogoutRequest;
 import com.app.librarymgtsystem.dtos.responses.AddMemberResponse;
+import com.app.librarymgtsystem.dtos.responses.LoginResponse;
 import com.app.librarymgtsystem.exceptions.*;
 import com.app.librarymgtsystem.services.MemberService;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Controller
 @RequestMapping("/api/member")
 public class MemberController {
+
+    private static final Logger log = LoggerFactory.getLogger(MemberController.class);
 
     @Autowired
     private MemberService memberService;
@@ -74,16 +82,20 @@ public class MemberController {
     }
 
     @PostMapping("/login-member")
-    public ResponseEntity<?> loginMember(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+    public ResponseEntity<?> loginMember(@Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+        log.info("Login request received for email: {}", loginRequest.getEmail());
         try {
-            memberService.loginMember(loginRequest, request);
-            return ResponseEntity.ok(memberService.loginMember(loginRequest, request));
+            Member loginResponse = memberService.loginMember(loginRequest, request);
+            return ResponseEntity.ok(loginResponse);
         } catch (LoginMemberException e) {
+            log.error("Login failed: {}", e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
+            log.error("Unexpected error occurred", e);
             return ResponseEntity.internalServerError().body("An unexpected error occurred");
         }
     }
+
 
     @PostMapping("/logout")
     public ResponseEntity<?> logoutMember(HttpServletRequest request) {

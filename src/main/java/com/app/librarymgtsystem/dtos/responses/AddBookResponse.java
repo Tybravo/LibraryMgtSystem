@@ -17,6 +17,9 @@ public class AddBookResponse {
     private String bookCurrency;
     private BigDecimal bookPrice;
     private int bookQuantity;
+    private boolean sessionStatus;
+    private int accessLevel;
+
 
     private String addBookMsg;
     private LocalDateTime creationDate = LocalDateTime.now();

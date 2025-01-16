@@ -17,6 +17,7 @@ public class AddRackResponse {
     private boolean rackAuthorize;
     private int rackNumberOfCopy;
     private String addRackMsg;
+    private boolean sessionStatus;
 
     private RackChoice rackChoice;
     private RackCopy rackCopy;

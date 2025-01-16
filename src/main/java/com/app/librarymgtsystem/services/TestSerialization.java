@@ -10,7 +10,8 @@ public class TestSerialization {
         request.setBookTitle("Effective Java");
         request.setBookAuthor("Joshua Bloch");
         request.setBookIsbn("9780134685991");
-        request.setBookPrice(BigDecimal.ZERO); // Explicitly set 0
+       // request.setBookPrice(BigDecimal.ZERO);
+        request.setBookPrice(Double.parseDouble(String.valueOf(55.77)));
 
         ObjectMapper objectMapper = new ObjectMapper();
         String json = objectMapper.writeValueAsString(request);

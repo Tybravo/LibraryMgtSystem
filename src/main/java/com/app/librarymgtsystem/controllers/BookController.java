@@ -6,6 +6,7 @@ import com.app.librarymgtsystem.dtos.responses.AddBookResponse;
 import com.app.librarymgtsystem.exceptions.BookCannotBeEmptyException;
 import com.app.librarymgtsystem.exceptions.BookExistException;
 import com.app.librarymgtsystem.exceptions.NotEligiblePageException;
+import com.app.librarymgtsystem.exceptions.NotInSessionException;
 import com.app.librarymgtsystem.services.BookService;
 import com.app.librarymgtsystem.services.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,18 +37,15 @@ public class BookController {
 
     @PostMapping("/addBook")
     public ResponseEntity<?> addBook(@RequestBody AddBookRequest addBookRequest, HttpServletRequest request) {
-        if (addBookRequest.getBookPrice() == null) {
-            addBookRequest.setBookPrice(BigDecimal.ZERO); // Default to 0 if not provided
-        }
-        System.out.println("Book Price in Controller: " + addBookRequest.getBookPrice()); // Debugging line
         try {
             AddBookResponse response = bookService.addBook(addBookRequest, request);
-            System.out.println("Book Price in Response: " + response.getBookPrice()); // Debugging line
             return ResponseEntity.ok(response);
-        } catch (BookCannotBeEmptyException | BookExistException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (NotInSessionException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         } catch (NotEligiblePageException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (BookExistException | BookCannotBeEmptyException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("An unexpected error occurred");
         }

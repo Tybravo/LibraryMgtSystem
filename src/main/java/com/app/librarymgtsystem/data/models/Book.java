@@ -18,8 +18,14 @@ public class Book {
     private String description;
     private String link;
     private String currency;
+    //private BigDecimal price = BigDecimal.ZERO;
     private BigDecimal price;
     private int quantity;
     private String addBookMsg;
+
     private LocalDateTime creationDate = LocalDateTime.now();
+
+    public void setPrice(BigDecimal price) {
+        this.price = price != null ? price : BigDecimal.ZERO;
+    }
 }

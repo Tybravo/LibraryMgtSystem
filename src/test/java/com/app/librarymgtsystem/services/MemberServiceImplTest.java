@@ -244,7 +244,8 @@ public class MemberServiceImplTest {
     public void test_That_Email_And_Password_Are_Correct() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(false)).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Ade Bravo");
@@ -260,6 +261,10 @@ public class MemberServiceImplTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("twinebravo@gmail.com");
         loginRequest.setPassword("tybravo");
+
+        String sessionEmailLibrarian = addMemberRequest.getEmail();
+        doNothing().when(session).setAttribute(eq("userEmail"), anyString());
+        when(session.getAttribute("userEmail")).thenReturn(sessionEmailLibrarian);
 
         Member getResponse = memberService.loginMember(loginRequest,request);
         assertEquals("twinebravo@gmail.com", getResponse.getEmail());
@@ -295,7 +300,8 @@ public class MemberServiceImplTest {
     public void test_That_Already_Login_Session_Is_Validated() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(false)).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Ade Bravo");
@@ -326,7 +332,8 @@ public class MemberServiceImplTest {
     public void test_That_Login_Session_Is_Currently_Running_And_Cannot_Login_Again() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(false)).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Ade Bravo");
@@ -352,7 +359,8 @@ public class MemberServiceImplTest {
     public void test_That_Login_Session_With_Email_And_Password_Are_Valid() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(false)).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Ade Bravo");
@@ -380,7 +388,7 @@ public class MemberServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Ade Bravo");

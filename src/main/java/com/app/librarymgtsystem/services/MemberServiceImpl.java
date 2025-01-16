@@ -170,30 +170,33 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public Member loginMember(LoginRequest loginRequest, HttpServletRequest request) {
-        String sessionToken = UUID.randomUUID().toString();
-        Member foundMember = findMemberByEmail(loginRequest.getEmail());
 
-        if (loginRequest.getEmail() == null || loginRequest.getEmail().isEmpty() ||
-                loginRequest.getPassword() == null || loginRequest.getPassword().isEmpty()) {
+        if (loginRequest.getEmail() == null || loginRequest.getEmail().isEmpty()) {
             throw new LoginMemberException("Email or Password cannot be empty");
         }
-        if (foundMember != null && foundMember.getEmail().equals(loginRequest.getEmail()) &&
-                loginRequest.getPassword().equals(foundMember.getPassword())) {
-            foundMember.setSessionStatus(true);
-            foundMember.setSessionToken(sessionToken);
-            foundMember.setSessionEmail(foundMember.getEmail());
-            memberRepository.save(foundMember);
 
-            LoggedInUserContext.setSessionToken(sessionToken);
-            LoggedInUserContext.setSessionEmail(foundMember.getEmail());
-            HttpSession session = request.getSession();
-            session.setAttribute("userEmail", foundMember.getEmail());
-            foundMember.setId(foundMember.getId());
-            foundMember.setLogMsg("Member Login successful");
-            return foundMember;
-        } else {
+        if (loginRequest.getPassword() == null || loginRequest.getPassword().isEmpty()) {
+            throw new LoginMemberException("Email or Password cannot be empty");
+        }
+
+        Member foundMember = findMemberByEmail(loginRequest.getEmail());
+        if (foundMember == null) {
+            throw new LoginMemberNotFoundException("Member not found with the provided email");
+        }
+
+        if (!foundMember.getPassword().equals(loginRequest.getPassword())) {
             throw new LoginMemberException("Wrong email or password entered");
         }
+
+        foundMember.setSessionStatus(true);
+        foundMember.setSessionEmail(foundMember.getEmail());
+        HttpSession session = request.getSession(true);
+        session.setAttribute("userEmail", foundMember.getEmail());
+
+        memberRepository.save(foundMember);
+        foundMember.setId(foundMember.getId());
+        foundMember.setLogMsg("Member Login successful");
+        return foundMember;
     }
 
     @Override
