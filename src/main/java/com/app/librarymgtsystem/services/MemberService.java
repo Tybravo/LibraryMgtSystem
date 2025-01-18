@@ -27,7 +27,7 @@ public interface MemberService {
 
     void emailCharNotIncluded(AddMemberRequest addMemberRequest);
 
-    Member alreadyInSession(LoginRequest loginRequest);
+    void alreadyInSession(LoginRequest loginRequest);
 
     LoginResponse loginEmail(LoginRequest loginRequest);
 

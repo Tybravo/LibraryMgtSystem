@@ -5,7 +5,6 @@ import com.app.librarymgtsystem.dtos.requests.AddMemberRequest;
 import com.app.librarymgtsystem.dtos.requests.LoginRequest;
 import com.app.librarymgtsystem.dtos.requests.LogoutRequest;
 import com.app.librarymgtsystem.dtos.responses.AddMemberResponse;
-import com.app.librarymgtsystem.dtos.responses.LoginResponse;
 import com.app.librarymgtsystem.exceptions.*;
 import com.app.librarymgtsystem.services.MemberService;
 import jakarta.servlet.ServletRequest;
@@ -70,10 +69,10 @@ public class MemberController {
     }
 
     @PostMapping("/already-in-session")
-    public ResponseEntity<?> alreadyInSession(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?>alreadyInSession(@RequestBody LoginRequest loginRequest) {
         try {
             memberService.alreadyInSession(loginRequest);
-            return ResponseEntity.ok(memberService.alreadyInSession(loginRequest));
+            return (ResponseEntity<?>) ResponseEntity.ok();
         } catch (NotInSessionException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {

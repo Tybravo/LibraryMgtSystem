@@ -92,10 +92,16 @@ public class BookServiceImpl implements BookService {
         if (addBookRequest.getBookTitle() == null || addBookRequest.getBookTitle().isEmpty() ||
                 addBookRequest.getBookAuthor() == null || addBookRequest.getBookAuthor().isEmpty() ||
                 addBookRequest.getBookIsbn() == null || addBookRequest.getBookIsbn().isEmpty() ||
-                addBookRequest.getBookDescription() == null || addBookRequest.getBookDescription().isEmpty()
-        //addBookRequest.getBookPrice() == null || addBookRequest.getBookPrice().compareTo(Double. <=0
-        ){
+                addBookRequest.getBookDescription() == null || addBookRequest.getBookDescription().isEmpty() ||
+                addBookRequest.getBookLink() == null || addBookRequest.getBookLink().isEmpty() ||
+                addBookRequest.getBookCurrency() == null || addBookRequest.getBookCurrency().isEmpty() ){
             throw new BookCannotBeEmptyException("Book detail cannot be empty!");
+        }
+        if (addBookRequest.getBookQuantity() <= 0) {
+            throw new BookCannotBeEmptyException("Book quantity must be greater than zero.");
+        }
+        if (addBookRequest.getBookPrice() == null || addBookRequest.getBookPrice() <= 0) {
+            throw new BookCannotBeEmptyException("Price cannot be null, empty, or less than or equal to zero");
         }
     }
 
@@ -125,8 +131,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public AddBookResponse addBook(AddBookRequest addBookRequest, HttpServletRequest request) {
         AddBookResponse addBookResponse = new AddBookResponse();
-         bookCannotBeEmpty(addBookRequest);
-        if(!findMemberSession(request)) {
+          if(!findMemberSession(request)) {
             throw new NotInSessionException("Not in session or currently logged out!");
         }
         if (findMemberSession(request) && !findMemberAccessLevel(20)) {
@@ -140,18 +145,17 @@ public class BookServiceImpl implements BookService {
             if (isbnAlreadyExist(addBookRequest)) {
                 throw new BookExistException("ISBN already exist");
             }
-                Book book = new Book();
+            bookCannotBeEmpty(addBookRequest);
+            Book book = new Book();
                 book.setTitle(addBookRequest.getBookTitle());
                 book.setAuthor(addBookRequest.getBookAuthor());
                 book.setIsbn(addBookRequest.getBookIsbn());
                 book.setDescription(addBookRequest.getBookDescription());
                 book.setLink(addBookRequest.getBookLink());
                 book.setCurrency(addBookRequest.getBookCurrency());
-//                book.setPrice(BigDecimal.ZERO);
-            //book.setPrice(addBookRequest.getBookPrice());
-                book.setPrice(addBookRequest.getBookPriceAsBigDecimal());
                 book.setPrice(addBookRequest.getBookPriceAsBigDecimal());
                 book.setQuantity(addBookRequest.getBookQuantity());
+                book.setPrice(addBookRequest.getBookPriceAsBigDecimal());
                 book.setCreationDate(LocalDateTime.now());
                 bookRepository.save(book);
                 book.setId(book.getId());
@@ -163,6 +167,10 @@ public class BookServiceImpl implements BookService {
                 addBookResponse.setBookAuthor(book.getAuthor());
                 addBookResponse.setBookIsbn(book.getIsbn());
                 addBookResponse.setBookDescription(book.getDescription());
+                addBookResponse.setBookLink(book.getLink());
+                addBookResponse.setBookCurrency(book.getCurrency());
+                addBookResponse.setBookPrice(book.getPrice());
+                addBookResponse.setBookQuantity(book.getQuantity());
                 addBookResponse.setCreationDate(book.getCreationDate());
             }
         return addBookResponse;

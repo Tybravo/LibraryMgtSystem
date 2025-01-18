@@ -291,9 +291,9 @@ public class MemberServiceImplTest {
         loginRequest.setEmail("twinebravo@gmail.com");
         loginRequest.setPassword("tybravo");
 
-        NotInSessionException exception = assertThrows(NotInSessionException.class, () ->
+        LoginMemberException exception = assertThrows(LoginMemberException.class, () ->
                 memberService.alreadyInSession(loginRequest));
-        assertEquals("Not in session! You accidentally miss your way", exception.getMessage());
+        assertEquals("Stop! You are already in session", exception.getMessage());
     }
 
     @Test
@@ -322,9 +322,9 @@ public class MemberServiceImplTest {
         assertEquals("twinebravo@gmail.com", getResponse.getEmail());
         assertEquals("tybravo", getResponse.getPassword());
 
-        Member getResponse2 = memberService.alreadyInSession(loginRequest);
-        assertEquals("twinebravo@gmail.com", getResponse2.getEmail());
-        assertTrue(getResponse2.isSessionStatus(), String.valueOf(true));
+        LoginMemberException exception = assertThrows(LoginMemberException.class, () ->
+                memberService.alreadyInSession(loginRequest));
+        assertEquals("Stop! You are already in session", exception.getMessage());
     }
 
 

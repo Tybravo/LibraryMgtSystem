@@ -22,7 +22,7 @@ import java.math.BigDecimal;
 
 
 @Controller
-@RequestMapping("/api/Book")
+@RequestMapping("/api/book")
 public class BookController {
 
     @Autowired

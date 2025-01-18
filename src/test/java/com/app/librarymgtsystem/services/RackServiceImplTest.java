@@ -89,7 +89,7 @@ class RackServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         Member addMemberRequest1 = new Member();
         addMemberRequest1.setFullName("Librarian Learned");
@@ -121,6 +121,10 @@ class RackServiceImplTest {
         addBookRequest.setBookAuthor("Author Two G");
         addBookRequest.setBookIsbn("rw63829wz-G");
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
+        addBookRequest.setBookLink(("https://open.spotify.com/track/7LZkMeX1k8PXQJ0SVYn1A5"));
+        addBookRequest.setBookCurrency("USD");
+        addBookRequest.setBookPrice(453478896747837883.00);
+        addBookRequest.setBookQuantity(14);
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
         AddBookResponse savedBookResponse = bookService.addBook(addBookRequest,request);
@@ -172,7 +176,7 @@ class RackServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         Member addMemberRequest1 = new Member();
         addMemberRequest1.setFullName("Librarian Learned");
@@ -203,6 +207,10 @@ class RackServiceImplTest {
         addBookRequest.setBookAuthor("Author Two GG");
         addBookRequest.setBookIsbn("rw63829wz-GG");
         addBookRequest.setBookDescription("Characterized by conscious design or purpose GG");
+        addBookRequest.setBookLink(("https://open.spotify.com/track/7LZkMeX1k8PXQJ0SVYn1A5"));
+        addBookRequest.setBookCurrency("USD");
+        addBookRequest.setBookPrice(453478896747837883.00);
+        addBookRequest.setBookQuantity(14);
 
         AddShelveRequest addShelveRequest = new AddShelveRequest();
         addShelveRequest.setBookCategory(ShelveType.COMICS);
@@ -279,7 +287,7 @@ class RackServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         Member addMemberRequest1 = new Member();
         addMemberRequest1.setFullName("Librarian Learned");
@@ -310,6 +318,10 @@ class RackServiceImplTest {
         addBookRequest.setBookAuthor("Author Two GG");
         addBookRequest.setBookIsbn("rw63829wz-GG");
         addBookRequest.setBookDescription("Characterized by conscious design or purpose GG");
+        addBookRequest.setBookLink(("https://open.spotify.com/track/7LZkMeX1k8PXQJ0SVYn1A5"));
+        addBookRequest.setBookCurrency("USD");
+        addBookRequest.setBookPrice(453478896747837883.00);
+        addBookRequest.setBookQuantity(14);
 
         AddShelveRequest addShelveRequest = new AddShelveRequest();
         addShelveRequest.setBookCategory(ShelveType.COMICS);
@@ -350,6 +362,10 @@ class RackServiceImplTest {
         addMemberRequest.setPassword("consistency");
         addMemberRequest.setPhoneNumber("08027663871");
         addMemberRequest.setAddress("No. 34, Sabo, Yaba, Lagos.");
+        addBookRequest.setBookLink(("https://open.spotify.com/track/7LZkMeX1k8PXQJ0SVYn1A5"));
+        addBookRequest.setBookCurrency("USD");
+        addBookRequest.setBookPrice(453478896747837883.00);
+        addBookRequest.setBookQuantity(14);
         addMemberRequest.setAccessLevel(10);
         addMemberRequest.setSessionStatus(false);
 

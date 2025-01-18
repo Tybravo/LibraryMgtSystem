@@ -85,7 +85,7 @@ class ShelveServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
@@ -125,7 +125,7 @@ class ShelveServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
@@ -156,6 +156,10 @@ class ShelveServiceImplTest {
         addBookRequest1.setBookAuthor("Author A");
         addBookRequest1.setBookIsbn("978-0-14-028329-5");
         addBookRequest1.setBookDescription("Carefully thought out in advance A");
+        addBookRequest1.setBookLink(("https://open.spotify.com/track/7LZkMeX1k8PXQJ0SVYn1A5"));
+        addBookRequest1.setBookCurrency("USD");
+        addBookRequest1.setBookPrice(453478896747837883.00);
+        addBookRequest1.setBookQuantity(14);
         addBookRequest1.setSessionStatus(true);
         addBookRequest1.setAccessLevel(20);
         AddBookResponse savedBookRequest1 = bookService.addBook(addBookRequest1, request);
@@ -166,6 +170,10 @@ class ShelveServiceImplTest {
         addBookRequest2.setBookAuthor("Author A");
         addBookRequest2.setBookIsbn("978-0-14-028329-8");
         addBookRequest2.setBookDescription("Carefully thought out in advance B");
+        addBookRequest2.setBookLink(("https://open.spotify.com/track/7LZkMeX1k8PXQJ0SVYn1A5"));
+        addBookRequest2.setBookCurrency("USD");
+        addBookRequest2.setBookPrice(453478896747837883.00);
+        addBookRequest2.setBookQuantity(14);
         addBookRequest2.setSessionStatus(true);
         addBookRequest2.setAccessLevel(20);
         AddBookResponse savedBookRequest2 = bookService.addBook(addBookRequest2, request);
@@ -237,7 +245,7 @@ class ShelveServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Ade Bravo");
@@ -277,7 +285,7 @@ class ShelveServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
@@ -308,6 +316,10 @@ class ShelveServiceImplTest {
         book1.setBookAuthor("Author C");
         book1.setBookIsbn("978-0-13-468599-1");
         book1.setBookDescription("Carefully thought out in advance C.");
+        book1.setBookLink(("https://open.spotify.com/track/7LZkMeX1k8PXQJ0SVYn1A5"));
+        book1.setBookCurrency("USD");
+        book1.setBookPrice(453478896747837883.00);
+        book1.setBookQuantity(14);
         book1.setSessionStatus(true);
         book1.setAccessLevel(20);
         AddBookResponse savedBook1 = bookService.addBook(book1, request);
@@ -318,6 +330,10 @@ class ShelveServiceImplTest {
         book2.setBookAuthor("Author D");
         book2.setBookIsbn("978-0-13-235088-4");
         book2.setBookDescription("Carefully thought out in advance D");
+        book2.setBookLink(("https://open.spotify.com/track/7LZkMeX1k8PXQJ0SVYn1A5"));
+        book2.setBookCurrency("USD");
+        book2.setBookPrice(453478896747837883.00);
+        book2.setBookQuantity(14);
         book2.setSessionStatus(true);
         book2.setAccessLevel(20);
         AddBookResponse savedBook2 = bookService.addBook(book2, request);
@@ -406,7 +422,7 @@ class ShelveServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
@@ -446,7 +462,7 @@ class ShelveServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
@@ -477,6 +493,10 @@ class ShelveServiceImplTest {
         addBookRequest.setBookAuthor("Author Two G");
         addBookRequest.setBookIsbn("rw63829wz-G");
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
+        addBookRequest.setBookLink(("https://open.spotify.com/track/7LZkMeX1k8PXQJ0SVYn1A5"));
+        addBookRequest.setBookCurrency("USD");
+        addBookRequest.setBookPrice(453478896747837883.00);
+        addBookRequest.setBookQuantity(14);
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
         AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
@@ -498,7 +518,7 @@ class ShelveServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
@@ -529,6 +549,10 @@ class ShelveServiceImplTest {
         addBookRequest.setBookAuthor("Author Two G");
         addBookRequest.setBookIsbn("rw63829wz-G");
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
+        addBookRequest.setBookLink(("https://open.spotify.com/track/7LZkMeX1k8PXQJ0SVYn1A5"));
+        addBookRequest.setBookCurrency("USD");
+        addBookRequest.setBookPrice(453478896747837883.00);
+        addBookRequest.setBookQuantity(14);
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
         AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
@@ -561,7 +585,7 @@ class ShelveServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
@@ -592,6 +616,10 @@ class ShelveServiceImplTest {
         addBookRequest.setBookAuthor("Author Two GG");
         addBookRequest.setBookIsbn("rw63829wz-GG");
         addBookRequest.setBookDescription("Characterized by conscious design or purpose GG");
+        addBookRequest.setBookLink(("https://open.spotify.com/track/7LZkMeX1k8PXQJ0SVYn1A5"));
+        addBookRequest.setBookCurrency("USD");
+        addBookRequest.setBookPrice(453478896747837883.00);
+        addBookRequest.setBookQuantity(14);
 
         AddShelveRequest addShelveRequest = new AddShelveRequest();
         addShelveRequest.setBookCategory(ShelveType.COMICS);
@@ -642,7 +670,7 @@ class ShelveServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
@@ -673,6 +701,10 @@ class ShelveServiceImplTest {
         addBookRequest.setBookAuthor("Author Two GG");
         addBookRequest.setBookIsbn("rw63829wz-GG");
         addBookRequest.setBookDescription("Characterized by conscious design or purpose GG");
+        addBookRequest.setBookLink(("https://open.spotify.com/track/7LZkMeX1k8PXQJ0SVYn1A5"));
+        addBookRequest.setBookCurrency("USD");
+        addBookRequest.setBookPrice(453478896747837883.00);
+        addBookRequest.setBookQuantity(14);
 
         AddShelveRequest addShelveRequest = new AddShelveRequest();
         addShelveRequest.setBookCategory(ShelveType.COMICS);
@@ -752,7 +784,7 @@ class ShelveServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
@@ -792,7 +824,7 @@ class ShelveServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
@@ -823,6 +855,10 @@ class ShelveServiceImplTest {
         addBookRequest.setBookAuthor("Author Two G");
         addBookRequest.setBookIsbn("rw63829wz-G");
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
+        addBookRequest.setBookLink(("https://open.spotify.com/track/7LZkMeX1k8PXQJ0SVYn1A5"));
+        addBookRequest.setBookCurrency("USD");
+        addBookRequest.setBookPrice(453478896747837883.00);
+        addBookRequest.setBookQuantity(14);
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
         AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
@@ -843,7 +879,7 @@ class ShelveServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
@@ -874,6 +910,10 @@ class ShelveServiceImplTest {
         addBookRequest.setBookAuthor("Author Two G");
         addBookRequest.setBookIsbn("rw63829wz-G");
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
+        addBookRequest.setBookLink(("https://open.spotify.com/track/7LZkMeX1k8PXQJ0SVYn1A5"));
+        addBookRequest.setBookCurrency("USD");
+        addBookRequest.setBookPrice(453478896747837883.00);
+        addBookRequest.setBookQuantity(14);
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
         AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
@@ -906,7 +946,7 @@ class ShelveServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
@@ -937,6 +977,10 @@ class ShelveServiceImplTest {
         addBookRequest.setBookAuthor("Author Two G");
         addBookRequest.setBookIsbn("rw63829wz-G");
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
+        addBookRequest.setBookLink(("https://open.spotify.com/track/7LZkMeX1k8PXQJ0SVYn1A5"));
+        addBookRequest.setBookCurrency("USD");
+        addBookRequest.setBookPrice(453478896747837883.00);
+        addBookRequest.setBookQuantity(14);
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
         AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
@@ -970,7 +1014,7 @@ class ShelveServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
@@ -1001,6 +1045,10 @@ class ShelveServiceImplTest {
         addBookRequest.setBookAuthor("Author Two GG");
         addBookRequest.setBookIsbn("rw63829wz-GG");
         addBookRequest.setBookDescription("Characterized by conscious design or purpose GG");
+        addBookRequest.setBookLink(("https://open.spotify.com/track/7LZkMeX1k8PXQJ0SVYn1A5"));
+        addBookRequest.setBookCurrency("USD");
+        addBookRequest.setBookPrice(453478896747837883.00);
+        addBookRequest.setBookQuantity(14);
 
         AddShelveRequest addShelveRequest = new AddShelveRequest();
         addShelveRequest.setBookCategory(ShelveType.COMICS);
@@ -1083,7 +1131,7 @@ class ShelveServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
@@ -1123,7 +1171,7 @@ class ShelveServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
@@ -1154,6 +1202,10 @@ class ShelveServiceImplTest {
         addBookRequest.setBookAuthor("Author Two G");
         addBookRequest.setBookIsbn("rw63829wz-G");
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
+        addBookRequest.setBookLink(("https://open.spotify.com/track/7LZkMeX1k8PXQJ0SVYn1A5"));
+        addBookRequest.setBookCurrency("USD");
+        addBookRequest.setBookPrice(453478896747837883.00);
+        addBookRequest.setBookQuantity(14);
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
         AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
@@ -1174,7 +1226,7 @@ class ShelveServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
@@ -1205,6 +1257,10 @@ class ShelveServiceImplTest {
         addBookRequest.setBookAuthor("Author Two G");
         addBookRequest.setBookIsbn("rw63829wz-G");
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
+        addBookRequest.setBookLink(("https://open.spotify.com/track/7LZkMeX1k8PXQJ0SVYn1A5"));
+        addBookRequest.setBookCurrency("USD");
+        addBookRequest.setBookPrice(453478896747837883.00);
+        addBookRequest.setBookQuantity(14);
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
         AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
@@ -1238,7 +1294,7 @@ class ShelveServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
@@ -1269,6 +1325,10 @@ class ShelveServiceImplTest {
         addBookRequest.setBookAuthor("Author Two G");
         addBookRequest.setBookIsbn("rw63829wz-G");
         addBookRequest.setBookDescription("Characterized by conscious design or purpose");
+        addBookRequest.setBookLink(("https://open.spotify.com/track/7LZkMeX1k8PXQJ0SVYn1A5"));
+        addBookRequest.setBookCurrency("USD");
+        addBookRequest.setBookPrice(453478896747837883.00);
+        addBookRequest.setBookQuantity(14);
         addBookRequest.setSessionStatus(true);
         addBookRequest.setAccessLevel(20);
         AddBookResponse savedBookRequest = bookService.addBook(addBookRequest, request);
@@ -1302,7 +1362,7 @@ class ShelveServiceImplTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         Member addMemberRequest = new Member();
         addMemberRequest.setFullName("Librarian Learned");
@@ -1333,6 +1393,10 @@ class ShelveServiceImplTest {
         addBookRequest.setBookAuthor("Author Two GG");
         addBookRequest.setBookIsbn("rw63829wz-GG");
         addBookRequest.setBookDescription("Characterized by conscious design or purpose GG");
+        addBookRequest.setBookLink(("https://open.spotify.com/track/7LZkMeX1k8PXQJ0SVYn1A5"));
+        addBookRequest.setBookCurrency("USD");
+        addBookRequest.setBookPrice(453478896747837883.00);
+        addBookRequest.setBookQuantity(14);
 
         AddShelveRequest addShelveRequest = new AddShelveRequest();
         addShelveRequest.setBookCategory(ShelveType.COMICS);
