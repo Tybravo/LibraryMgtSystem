@@ -25,6 +25,9 @@ public class AddBookRequest {
         return bookPrice != null ? BigDecimal.valueOf(bookPrice) : BigDecimal.ZERO;
     }
 
+//    public BigDecimal getBookPriceAsBigDecimal() {
+//        return bookPrice != null ? new BigDecimal(bookPrice) : BigDecimal.ZERO;
+//    }
     @JsonIgnore
     private String id;
 

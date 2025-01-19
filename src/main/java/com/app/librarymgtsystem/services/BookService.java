@@ -29,6 +29,8 @@ public interface BookService {
 
     boolean bookAlreadyExist(AddBookRequest addBookRequest);
 
+    //boolean authorAlreadyExist(AddBookRequest addBookRequest);
+
     boolean isbnAlreadyExist(AddBookRequest addBookRequest);
 
     Book findBookByTitle(String title);

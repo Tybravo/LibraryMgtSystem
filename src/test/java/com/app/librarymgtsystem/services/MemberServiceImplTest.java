@@ -142,6 +142,32 @@ public class MemberServiceImplTest {
     }
 
     @Test
+    public void test_That_User_Cannot_Login_With_Right_Password_When_Email_Is_Not_Found() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
+        AddMemberRequest addMemberRequest = new AddMemberRequest();
+        addMemberRequest.setFullName("Ade Bravo");
+        addMemberRequest.setEmail("twinebravo@gmail.com");
+        addMemberRequest.setPassword("tybravo");
+        addMemberRequest.setPhoneNumber("07032819318");
+        addMemberRequest.setAddress("No. 34, Sabo, Yaba, Lagos.");
+        addMemberRequest.setAccessLevel(10);
+        addMemberRequest.setSessionStatus(false);
+        AddMemberResponse response = memberService.registerMember(addMemberRequest);
+        assertEquals("Registration successful", response.getRegMsg());
+
+        LoginRequest getRequest = new LoginRequest();
+        getRequest.setEmail("bravo@gmail.com");
+        getRequest.setPassword("tybravo");
+        //getRequest.setSessionStatus(false);
+        LoginEmailException exception = assertThrows(LoginEmailException.class, () ->
+                memberService.loginPassword(getRequest, request));
+        assertEquals("Cannot find email", exception.getMessage());
+    }
+
+    @Test
     public void test_That_User_Cannot_Login_With_Wrong_Password() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
@@ -159,11 +185,12 @@ public class MemberServiceImplTest {
         assertEquals("Registration successful", response.getRegMsg());
 
         LoginRequest getRequest = new LoginRequest();
+        getRequest.setEmail("twinebravo@gmail.com");
         getRequest.setPassword("bravo");
         //getRequest.setSessionStatus(false);
         LoginPasswordException exception = assertThrows(LoginPasswordException.class, () ->
                 memberService.loginPassword(getRequest, request));
-        assertEquals("You have entered a wrong password or missing email", exception.getMessage());
+        assertEquals("You have entered a wrong password", exception.getMessage());
     }
 
     @Test
@@ -272,28 +299,6 @@ public class MemberServiceImplTest {
         LoginResponse getResponse2= new LoginResponse();
         getResponse2.setRegMsg("Member Login successful");
         assertEquals("Member Login successful", getResponse2.getRegMsg());
-    }
-
-    @Test
-    public void test_That_Already_Login_Session_Is_Not_Validated() {
-        AddMemberRequest addMemberRequest = new AddMemberRequest();
-        addMemberRequest.setFullName("Ade Bravo");
-        addMemberRequest.setEmail("twinebravo@gmail.com");
-        addMemberRequest.setPassword("tybravo");
-        addMemberRequest.setPhoneNumber("07032819318");
-        addMemberRequest.setAddress("No. 34, Sabo, Yaba, Lagos.");
-        addMemberRequest.setAccessLevel(10);
-        addMemberRequest.setSessionStatus(false);
-        AddMemberResponse response = memberService.registerMember(addMemberRequest);
-        assertEquals("Registration successful", response.getRegMsg());
-
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setEmail("twinebravo@gmail.com");
-        loginRequest.setPassword("tybravo");
-
-        LoginMemberException exception = assertThrows(LoginMemberException.class, () ->
-                memberService.alreadyInSession(loginRequest));
-        assertEquals("Stop! You are already in session", exception.getMessage());
     }
 
     @Test

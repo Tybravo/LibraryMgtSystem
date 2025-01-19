@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +37,13 @@ public class BookServiceImpl implements BookService {
     @Autowired
     private ShelveRepository shelveRepository;
 
+    @Autowired
+    private final SessionService sessionService;
+
+    @Autowired
+    public BookServiceImpl(SessionService sessionService) {
+        this.sessionService = sessionService;
+    }
 
 
     @Override
@@ -50,11 +58,16 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public boolean findMemberSession(HttpServletRequest request) {
-        String sessionEmail = getSessionEmail(request);
-        if (sessionEmail == null) {
+        String sessionMemberEmail = getSessionEmail(request);
+        if (sessionMemberEmail == null) {
+            Optional<Member> optionalMemberSession = sessionService.findMemberBySessionEmail();
+            optionalMemberSession.ifPresent(member -> {
+                member.setSessionStatus(false);
+                memberRepository.save(member);
+            });
             throw new NotInSessionException("Not in session or currently logged out!");
         }
-        Optional<Member> optionalMember = memberRepository.findBySessionEmail(sessionEmail);
+            Optional<Member> optionalMember = memberRepository.findBySessionEmail(sessionMemberEmail);
         if (optionalMember.isEmpty()) {
             throw new EmailNotFoundException("Member email not found");
         }
@@ -87,6 +100,8 @@ public class BookServiceImpl implements BookService {
     }
 
 
+
+
     @Override
     public void bookCannotBeEmpty(AddBookRequest addBookRequest) {
         if (addBookRequest.getBookTitle() == null || addBookRequest.getBookTitle().isEmpty() ||
@@ -108,11 +123,10 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public boolean bookAlreadyExist(AddBookRequest addBookRequest) {
-        Book pullBook = findBookByTitle(addBookRequest.getBookTitle());
-        Book pullAuthor = findBookByAuthor(addBookRequest.getBookAuthor());
-        if (pullBook != null && pullBook.getTitle().equals(addBookRequest.getBookTitle()) &&
-                pullAuthor != null && pullAuthor.getAuthor().equals(addBookRequest.getBookAuthor())) {
-            throw new BookExistException("Book already exist! Adjust title or author");
+        Book existingBook = bookRepository.findByTitleAndAuthor(
+                addBookRequest.getBookTitle(), addBookRequest.getBookAuthor());
+        if (existingBook != null) {
+            throw new BookExistException("Book already exists! Adjust title or author");
         }
         return false;
     }
@@ -122,7 +136,7 @@ public class BookServiceImpl implements BookService {
     public boolean isbnAlreadyExist(AddBookRequest addBookRequest) {
         Book pullIsbn = findBookByIsbn(addBookRequest.getBookIsbn());
         if (pullIsbn != null && pullIsbn.getIsbn().equals(addBookRequest.getBookIsbn())) {
-            throw new BookExistException("ISBN already exist!");
+            throw new IsbnExistException("ISBN already exist!");
         }
         return false;
     }
@@ -155,7 +169,7 @@ public class BookServiceImpl implements BookService {
                 book.setCurrency(addBookRequest.getBookCurrency());
                 book.setPrice(addBookRequest.getBookPriceAsBigDecimal());
                 book.setQuantity(addBookRequest.getBookQuantity());
-                book.setPrice(addBookRequest.getBookPriceAsBigDecimal());
+                book.setPrice(BigDecimal.valueOf(addBookRequest.getBookPrice()).setScale(2, RoundingMode.HALF_UP));
                 book.setCreationDate(LocalDateTime.now());
                 bookRepository.save(book);
                 book.setId(book.getId());

@@ -13,5 +13,6 @@ public interface BookRepository  extends MongoRepository<Book, String> {
     Book findByAuthor(String author);
     Book findByIsbn(String isbn);
     Optional<Book> findByTitleIgnoreCase(String title);
-
+    Book findByTitleAndAuthor(String bookTitle, String bookAuthor);
 }
+

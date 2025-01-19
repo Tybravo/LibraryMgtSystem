@@ -3,7 +3,6 @@ package com.app.librarymgtsystem.services;
 import com.app.librarymgtsystem.data.models.Member;
 import com.app.librarymgtsystem.dtos.requests.LoginRequest;
 import com.app.librarymgtsystem.dtos.requests.AddMemberRequest;
-import com.app.librarymgtsystem.dtos.requests.LogoutRequest;
 import com.app.librarymgtsystem.dtos.responses.AddMemberResponse;
 import com.app.librarymgtsystem.dtos.responses.LoginResponse;
 import com.app.librarymgtsystem.dtos.responses.LogoutResponse;

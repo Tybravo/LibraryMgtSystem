@@ -14,5 +14,4 @@ public interface MemberRepository extends MongoRepository<Member, String> {
     Optional<Member> findBySessionEmail(String sessionEmail);
 
     Member findBySessionStatus(Boolean sessionStatus);
-
 }

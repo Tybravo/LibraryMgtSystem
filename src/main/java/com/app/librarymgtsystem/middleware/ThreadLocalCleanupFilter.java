@@ -1,5 +1,6 @@
 package com.app.librarymgtsystem.middleware;
 
+import com.app.librarymgtsystem.security.LoggedInUserContext;
 import com.app.librarymgtsystem.services.MemberServiceImpl;
 import jakarta.servlet.*;
 import java.io.IOException;
@@ -12,7 +13,7 @@ public class ThreadLocalCleanupFilter implements Filter {
         try {
             chain.doFilter(request, response);
         } finally {
-            MemberServiceImpl.LoggedInUserContext.clear();
+            LoggedInUserContext.clear();
         }
     }
 }

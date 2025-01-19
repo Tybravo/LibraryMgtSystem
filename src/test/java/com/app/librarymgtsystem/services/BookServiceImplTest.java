@@ -447,10 +447,10 @@ class BookServiceImplTest {
 
         BookExistException exception = assertThrows(BookExistException.class, () ->
                 bookService.bookAlreadyExist(addBookAgain));
-        assertEquals("Book already exist! Adjust title or author", exception.getMessage());
+        assertEquals("Book already exists! Adjust title or author", exception.getMessage());
         BookExistException exception1 = assertThrows(BookExistException.class, () ->
                 bookService.addBook(addBookAgain, request));
-        assertEquals("Book already exist! Adjust title or author", exception1.getMessage());
+        assertEquals("Book already exists! Adjust title or author", exception1.getMessage());
         }
 
     @Test
@@ -505,7 +505,7 @@ class BookServiceImplTest {
         addIsbnBookAgain.setBookDescription("Characterized by conscious design or purpose C");
         addIsbnBookAgain.setSessionStatus(true);
 
-        BookExistException exception = assertThrows(BookExistException.class, () ->
+        IsbnExistException exception = assertThrows(IsbnExistException.class, () ->
                 bookService.addBook(addIsbnBookAgain, request));
         assertEquals("ISBN already exist!", exception.getMessage());
         }
@@ -713,7 +713,7 @@ class BookServiceImplTest {
         member.setPhoneNumber("08027663871");
         member.setAddress("No. 34, Sabo, Yaba, Lagos.");
         member.setAccessLevel(20);
-        member.setSessionStatus(true);
+        member.setSessionStatus(false);
         memberRepository.save(member);
         AddMemberResponse response = new AddMemberResponse();
         response.setRegMsg("Registration successful");

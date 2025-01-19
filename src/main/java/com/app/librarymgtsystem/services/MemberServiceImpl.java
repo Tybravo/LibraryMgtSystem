@@ -8,6 +8,7 @@ import com.app.librarymgtsystem.dtos.responses.AddMemberResponse;
 import com.app.librarymgtsystem.dtos.responses.LoginResponse;
 import com.app.librarymgtsystem.dtos.responses.LogoutResponse;
 import com.app.librarymgtsystem.exceptions.*;
+import com.app.librarymgtsystem.security.LoggedInUserContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,13 @@ import java.util.UUID;
 public class MemberServiceImpl implements MemberService {
     @Autowired
     MemberRepository memberRepository;
+    @Autowired
+    private final SessionService sessionService;
+
+    @Autowired
+    public MemberServiceImpl(SessionService sessionService) {
+        this.sessionService = sessionService;
+    }
 
 
     @Override
@@ -124,59 +132,54 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public LoginResponse loginPassword(LoginRequest loginRequest, HttpServletRequest request) {
-        Member getMemberStatus = findMemberByEmail(loginRequest.getEmail());
-        if (getMemberStatus != null) {
-            if (loginRequest.getEmail().equals(getMemberStatus.getEmail()) &&
-                    ! loginRequest.getPassword().equals(getMemberStatus.getPassword()) ) {
-                throw new LoginMemberException("Stop! You are already in session");
-            }
+        if (loginRequest.getPassword() == null || loginRequest.getPassword().isEmpty()) {
+            throw new LoginPasswordException("Password cannot be empty");
         }
+        Member getMemberStatus = findMemberByEmail(loginRequest.getEmail());
+        if (getMemberStatus != null && getMemberStatus.isSessionStatus()) {
+            throw new LoginMemberException("Stop! You are already in session");
+        }
+        loginEmail(loginRequest);
+        Member foundMemberPassword = findMemberByEmail(loginRequest.getEmail());
+        if (foundMemberPassword == null) {
+            throw new LoginPasswordException("No account found with this email");
+        }
+        if (!foundMemberPassword.getPassword().equals(loginRequest.getPassword())) {
+            throw new LoginPasswordException("You have entered a wrong password");
+        }
+
         String sessionToken = UUID.randomUUID().toString();
-            Member foundMemberPassword = findMemberByEmail(loginRequest.getEmail());
-            if (foundMemberPassword != null && (foundMemberPassword.getPassword().equals(loginRequest.getPassword()))) {
-                foundMemberPassword.setSessionStatus(true);
-                foundMemberPassword.setSessionToken(sessionToken);
-                foundMemberPassword.setSessionEmail(foundMemberPassword.getEmail());
-                memberRepository.save(foundMemberPassword);
+        foundMemberPassword.setSessionStatus(true);
+        foundMemberPassword.setSessionToken(sessionToken);
+        foundMemberPassword.setSessionEmail(foundMemberPassword.getEmail());
+        memberRepository.save(foundMemberPassword);
 
-                LoggedInUserContext.setSessionToken(sessionToken);
-                LoggedInUserContext.setSessionEmail(foundMemberPassword.getEmail());
-                HttpSession session = request.getSession();
-                session.setAttribute("userEmail", foundMemberPassword.getEmail());
+        LoggedInUserContext.setSessionToken(sessionToken);
+        LoggedInUserContext.setSessionEmail(foundMemberPassword.getEmail());
+        HttpSession session = request.getSession();
+        session.setAttribute("userEmail", foundMemberPassword.getEmail());
 
-                LoginResponse regResponse = new LoginResponse();
-                regResponse.setId(foundMemberPassword.getId());
-                regResponse.setEmail(foundMemberPassword.getEmail());
-                regResponse.setSessionStatus(foundMemberPassword.isSessionStatus());
-                regResponse.setLogMsg("Correct password! Member Login successful");
-                 return regResponse;
-            }
-            if (loginRequest.getPassword() == null || loginRequest.getPassword().isEmpty()) {
-                throw new LoginPasswordException("Password cannot be empty");
-            } else {
-                throw new LoginPasswordException("You have entered a wrong password or missing email");
-            }
+        LoginResponse regResponse = new LoginResponse();
+        regResponse.setId(foundMemberPassword.getId());
+        regResponse.setEmail(foundMemberPassword.getEmail());
+        regResponse.setSessionStatus(foundMemberPassword.isSessionStatus());
+        regResponse.setLogMsg("Correct password! Member Login successful");
+        return regResponse;
     }
 
     @Override
     public void alreadyInSession(LoginRequest loginRequest) {
         Member getMemberStatus = findMemberByEmail(loginRequest.getEmail());
-        if (getMemberStatus != null) {
-            if (loginRequest.getEmail().equals(getMemberStatus.getEmail()) &&
-                     loginRequest.getPassword().equals(getMemberStatus.getPassword()) ) {
-                throw new LoginMemberException("Stop! You are already in session");
-            }
+        if (getMemberStatus != null && getMemberStatus.isSessionStatus()) {
+            throw new LoginMemberException("Stop! You are already in session");
         }
     }
 
     @Override
     public Member loginMember(LoginRequest loginRequest, HttpServletRequest request) {
         Member getMemberStatus = findMemberByEmail(loginRequest.getEmail());
-        if (getMemberStatus != null) {
-            if (loginRequest.getEmail().equals(getMemberStatus.getEmail()) &&
-                    ! loginRequest.getPassword().equals(getMemberStatus.getPassword()) ) {
-                throw new LoginMemberException("Stop! You are already in session");
-            }
+        if (getMemberStatus != null && getMemberStatus.isSessionStatus()) {
+            throw new LoginMemberException("Stop! You are already in session");
         }
         if (loginRequest.getEmail() == null || loginRequest.getEmail().isEmpty()) {
             throw new LoginMemberException("Email or Password cannot be empty");
@@ -191,6 +194,10 @@ public class MemberServiceImpl implements MemberService {
         if (!foundMember.getPassword().equals(loginRequest.getPassword())) {
             throw new LoginMemberException("Wrong email or password entered");
         }
+        String sessionToken = UUID.randomUUID().toString();
+        LoggedInUserContext.setSessionToken(sessionToken);
+        LoggedInUserContext.setSessionEmail(foundMember.getEmail());
+
         foundMember.setSessionStatus(true);
         foundMember.setSessionEmail(foundMember.getEmail());
         HttpSession session = request.getSession(true);
@@ -228,29 +235,6 @@ public class MemberServiceImpl implements MemberService {
             return outSession;
         } finally {
             LoggedInUserContext.clear();
-        }
-    }
-
-
-    public static class LoggedInUserContext {
-        private static final ThreadLocal<String> sessionEmail = new ThreadLocal<>();
-        private static final ThreadLocal<String> sessionToken = new ThreadLocal<>();
-
-        public static void setSessionEmail(String email) {
-            sessionEmail.set(email);
-        }
-        public static String getSessionEmail() {
-            return sessionEmail.get();
-        }
-        public static void setSessionToken(String token) {
-            sessionToken.set(token);
-        }
-        public static String getSessionToken() {
-            return sessionToken.get();
-        }
-        public static void clear() {
-            sessionEmail.remove();
-            sessionToken.remove();
         }
     }
 

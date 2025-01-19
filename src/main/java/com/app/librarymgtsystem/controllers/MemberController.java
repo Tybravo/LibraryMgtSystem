@@ -5,12 +5,12 @@ import com.app.librarymgtsystem.dtos.requests.AddMemberRequest;
 import com.app.librarymgtsystem.dtos.requests.LoginRequest;
 import com.app.librarymgtsystem.dtos.requests.LogoutRequest;
 import com.app.librarymgtsystem.dtos.responses.AddMemberResponse;
+import com.app.librarymgtsystem.dtos.responses.LoginResponse;
 import com.app.librarymgtsystem.exceptions.*;
 import com.app.librarymgtsystem.services.MemberService;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -59,9 +59,9 @@ public class MemberController {
     @PostMapping("/login-password")
     public ResponseEntity<?> loginMyPassword(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
         try {
-            memberService.loginPassword(loginRequest, request);
-            return ResponseEntity.ok(memberService.loginPassword(loginRequest, request));
-        } catch (LoginPasswordException e) {
+            LoginResponse response = memberService.loginPassword(loginRequest, request);
+            return ResponseEntity.ok(response);
+        } catch (LoginPasswordException | LoginEmailException | LoginMemberException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("An unexpected error occurred");
@@ -81,12 +81,12 @@ public class MemberController {
     }
 
     @PostMapping("/login-member")
-    public ResponseEntity<?> loginMember(@Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+    public ResponseEntity<?> loginMember( @RequestBody LoginRequest loginRequest, HttpServletRequest request) {
         log.info("Login request received for email: {}", loginRequest.getEmail());
         try {
             Member loginResponse = memberService.loginMember(loginRequest, request);
             return ResponseEntity.ok(loginResponse);
-        } catch (LoginMemberException e) {
+        } catch (LoginMemberException | LoginMemberNotFoundException e) {
             log.error("Login failed: {}", e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
@@ -106,7 +106,6 @@ public class MemberController {
             LogoutRequest logoutRequest = new LogoutRequest();
             logoutRequest.setEmail((String) session.getAttribute("userEmail"));
             memberService.logoutMember(request);
-
             return ResponseEntity.ok("Logout successful!");
         } catch (LogoutMemberException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
