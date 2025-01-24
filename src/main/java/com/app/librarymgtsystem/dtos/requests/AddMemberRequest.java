@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 @Data
 public class AddMemberRequest {
 
-    private String id;
     private String fullName;
     private String email;
     private String password;

@@ -13,6 +13,7 @@ import com.app.librarymgtsystem.dtos.responses.AddRackResponse;
 import com.app.librarymgtsystem.exceptions.BookInShelveNotAvailableException;
 import com.app.librarymgtsystem.exceptions.BookNotFoundException;
 import com.app.librarymgtsystem.exceptions.NotInSessionException;
+import com.app.librarymgtsystem.security.LoggedInUserContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,7 +52,7 @@ class RackServiceImplTest {
         memberRepository.deleteAll();
         bookRepository.deleteAll();
         rackRepository.deleteAll();
-        MemberServiceImpl.LoggedInUserContext.clear();
+        LoggedInUserContext.clear();
     }
 
 

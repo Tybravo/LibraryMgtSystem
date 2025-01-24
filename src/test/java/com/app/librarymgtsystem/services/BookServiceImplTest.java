@@ -10,6 +10,7 @@ import com.app.librarymgtsystem.data.repositories.ShelveRepository;
 import com.app.librarymgtsystem.dtos.requests.*;
 import com.app.librarymgtsystem.dtos.responses.*;
 import com.app.librarymgtsystem.exceptions.*;
+import com.app.librarymgtsystem.security.LoggedInUserContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,7 +46,7 @@ class BookServiceImplTest {
         void eraseAll() {
             memberRepository.deleteAll();
             bookRepository.deleteAll();
-            MemberServiceImpl.LoggedInUserContext.clear();
+            LoggedInUserContext.clear();
     }
 
 
@@ -67,8 +68,8 @@ class BookServiceImplTest {
         assertEquals("Registration successful", response.getRegMsg());
 
         String nonExistSessionEmail = "twinebravo@gmail.com";
-        MemberServiceImpl.LoggedInUserContext.setSessionEmail(nonExistSessionEmail);
-        MemberServiceImpl.LoggedInUserContext.clear();
+        LoggedInUserContext.setSessionEmail(nonExistSessionEmail);
+        LoggedInUserContext.clear();
 
         NotInSessionException exception = assertThrows(NotInSessionException.class, () ->
                 bookService.findMemberSession(request));
@@ -122,7 +123,7 @@ class BookServiceImplTest {
 
         memberRepository.deleteAll();
         String pullSessionEmail = "twinebravo@gmail.com";
-        MemberServiceImpl.LoggedInUserContext.setSessionEmail(pullSessionEmail);
+        LoggedInUserContext.setSessionEmail(pullSessionEmail);
         Member memberSession = new Member();
         memberSession.setFullName("Ade Bravo");
         memberSession.setEmail("twinebravo@gmail.com");

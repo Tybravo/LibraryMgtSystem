@@ -13,13 +13,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Controller
+@CrossOrigin(origins = "http://localhost:3000")  // Allow requests from React
+@RestController
 @RequestMapping("/api/member")
 public class MemberController {
 
@@ -37,7 +37,7 @@ public class MemberController {
             return ResponseEntity.ok(response);
         } catch (EmailCannotBeEmptyException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (EmailExistException | EmailCannotHaveSpacesException | PasswordCannotHaveSpacesException | EmailCharNotIncludedException e)  {
+        } catch (EmailExistException | EmailCannotHaveSpacesException | PasswordCannotHaveSpacesException | PasswordCannotLessThan7Exception | EmailCharNotIncludedException e)  {
             return ResponseEntity.badRequest().body(e.getLocalizedMessage());
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("An unexpected error occurred");

@@ -18,6 +18,8 @@ public interface MemberService {
 
     void passwordCannotHaveSpace(AddMemberRequest addMemberRequest);
 
+    void passwordCannotLessThan7(AddMemberRequest addMemberRequest);
+
     AddMemberResponse registerMember(AddMemberRequest addMemberRequest);
 
     void emailAlreadyExists(AddMemberRequest addMemberRequest);

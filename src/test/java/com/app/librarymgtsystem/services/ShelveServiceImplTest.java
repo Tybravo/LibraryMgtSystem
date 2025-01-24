@@ -10,6 +10,7 @@ import com.app.librarymgtsystem.data.repositories.ShelveRepository;
 import com.app.librarymgtsystem.dtos.requests.*;
 import com.app.librarymgtsystem.dtos.responses.*;
 import com.app.librarymgtsystem.exceptions.*;
+import com.app.librarymgtsystem.security.LoggedInUserContext;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -49,7 +50,7 @@ class ShelveServiceImplTest {
         shelveRepository.deleteAll();
         bookRepository.deleteAll();
         memberRepository.deleteAll();
-        MemberServiceImpl.LoggedInUserContext.clear();
+        LoggedInUserContext.clear();
     }
 
 

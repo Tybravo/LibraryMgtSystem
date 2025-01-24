@@ -73,6 +73,19 @@ public class MemberServiceImplTest {
         assertEquals("Password cannot have spaces", exception.getMessage());
     }
 
+    @Test
+    public void test_That_Registration_Password_Cannot_Be_Less_Than_7() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+
+        AddMemberRequest request1 = new AddMemberRequest();
+        request1.setPassword("bravo");
+        PasswordCannotLessThan7Exception exception = assertThrows(PasswordCannotLessThan7Exception.class, () ->
+                memberService.passwordCannotLessThan7(request1));
+        assertEquals("Password cannot be less than seven", exception.getMessage());
+    }
+
 
     @Test
     public void test_That_Registration_Email_Must_Include_Email_Characters() {

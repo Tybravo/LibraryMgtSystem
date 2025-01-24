@@ -43,11 +43,19 @@ public class MemberServiceImpl implements MemberService {
             throw new EmailCannotHaveSpacesException("Email cannot have spaces");
         }
     }
+
     @Override
     public void passwordCannotHaveSpace(AddMemberRequest addMemberRequest) {
         String password = addMemberRequest.getPassword();
         if (password != null && password.contains(" ")) {
             throw new PasswordCannotHaveSpacesException("Password cannot have spaces");
+        }
+    }
+
+    @Override
+    public void passwordCannotLessThan7(AddMemberRequest addMemberRequest) {
+        if(addMemberRequest.getPassword().length() < 7) {
+            throw new PasswordCannotLessThan7Exception("Password cannot be less than seven");
         }
     }
 
@@ -64,8 +72,7 @@ public class MemberServiceImpl implements MemberService {
         addMemberRequest.getPassword() == null || addMemberRequest.getPassword().isEmpty() ||
         addMemberRequest.getFullName() == null || addMemberRequest.getFullName().isEmpty() ||
         addMemberRequest.getPhoneNumber() == null || addMemberRequest.getPhoneNumber().isEmpty() ||
-        addMemberRequest.getAddress() == null || addMemberRequest.getAddress().isEmpty() ||
-        addMemberRequest.getPassword().length() < 7 ) {
+        addMemberRequest.getAddress() == null || addMemberRequest.getAddress().isEmpty() ){
             throw new EmailCannotBeEmptyException("Registration Fields cannot be empty");
         }
     }
@@ -84,6 +91,7 @@ public class MemberServiceImpl implements MemberService {
         emailCharNotIncluded(addMemberRequest);
         emailCannotHaveSpace(addMemberRequest);
         passwordCannotHaveSpace(addMemberRequest);
+        passwordCannotLessThan7(addMemberRequest);
 
         Member getMember = findMemberByEmail(addMemberRequest.getEmail());
         AddMemberResponse regResponse = new AddMemberResponse();
