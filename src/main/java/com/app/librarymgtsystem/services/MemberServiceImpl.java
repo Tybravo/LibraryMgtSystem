@@ -14,6 +14,11 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -164,13 +169,18 @@ public class MemberServiceImpl implements MemberService {
 
         LoggedInUserContext.setSessionToken(sessionToken);
         LoggedInUserContext.setSessionEmail(foundMemberPassword.getEmail());
-        HttpSession session = request.getSession();
+
+        HttpSession session = request.getSession(true);
+        session.setMaxInactiveInterval(30 * 60); // Set session timeout (30 minutes)
         session.setAttribute("userEmail", foundMemberPassword.getEmail());
+        String sessionEmail = (String) session.getAttribute("userEmail");
 
         LoginResponse regResponse = new LoginResponse();
         regResponse.setId(foundMemberPassword.getId());
         regResponse.setEmail(foundMemberPassword.getEmail());
         regResponse.setSessionStatus(foundMemberPassword.isSessionStatus());
+        regResponse.setAccessLevel(foundMemberPassword.getAccessLevel());
+        regResponse.setSessionEmail(sessionEmail);
         regResponse.setLogMsg("Correct password! Member Login successful");
         return regResponse;
     }
@@ -208,7 +218,9 @@ public class MemberServiceImpl implements MemberService {
 
         foundMember.setSessionStatus(true);
         foundMember.setSessionEmail(foundMember.getEmail());
+
         HttpSession session = request.getSession(true);
+        session.setMaxInactiveInterval(30 * 60); // Set session timeout (30 minutes)
         session.setAttribute("userEmail", foundMember.getEmail());
 
         memberRepository.save(foundMember);
@@ -218,7 +230,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public LogoutResponse logoutMember(HttpServletRequest request) {
+    public LogoutResponse logoutMember(HttpServletRequest request, HttpServletResponse response) {
         try {
             HttpSession session = request.getSession(false);
             if (session == null || session.getAttribute("userEmail") == null) {
@@ -232,19 +244,36 @@ public class MemberServiceImpl implements MemberService {
             if (!foundMember.isSessionStatus()) {
                 throw new LogoutMemberException("You are currently out of session");
             }
+            // Update session status and persist changes
             foundMember.setSessionStatus(false);
             memberRepository.save(foundMember);
 
+            // Invalidate the session
             session.invalidate();
 
-            LogoutResponse outSession = new LogoutResponse();
-            outSession.setEmail(sessionEmail);
-            outSession.setLogoutMsg("Logged out successfully");
-            return outSession;
+            // Remove JSESSIONID cookie by setting Max-Age to 0
+            Cookie jsessionCookie = new Cookie("JSESSIONID", null);
+            jsessionCookie.setPath("/");
+            jsessionCookie.setHttpOnly(true);
+            jsessionCookie.setMaxAge(0); // Expire the cookie
+            response.addCookie(jsessionCookie);
+
+            // Prepare logout response
+            LogoutResponse logoutResponse = new LogoutResponse();
+            logoutResponse.setEmail(sessionEmail);
+            logoutResponse.setLogoutMsg("Logged out successfully");
+
+            return logoutResponse;
         } finally {
+            // Ensure the user context is cleared
             LoggedInUserContext.clear();
         }
     }
+
+
+
+
+
 
 
 

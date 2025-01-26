@@ -10,6 +10,7 @@ import com.app.librarymgtsystem.dtos.responses.LoginResponse;
 import com.app.librarymgtsystem.dtos.responses.LogoutResponse;
 import com.app.librarymgtsystem.exceptions.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -230,7 +231,8 @@ public class MemberServiceImplTest {
     public void test_That_User_Can_Login_With_Right_Password() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession(false)).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
 
         AddMemberRequest addMemberRequest = new AddMemberRequest();
         addMemberRequest.setFullName("Ade Bravo");
@@ -404,6 +406,7 @@ public class MemberServiceImplTest {
     @Test
     public void test_That_Logout_Session_Is_Executed() {
         HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = mock(HttpServletResponse.class);
         HttpSession session = mock(HttpSession.class);
         when(request.getSession(false)).thenReturn(session);
         when(request.getSession(true)).thenReturn(session);
@@ -416,8 +419,8 @@ public class MemberServiceImplTest {
         addMemberRequest.setAddress("No. 34, Sabo, Yaba, Lagos.");
         addMemberRequest.setAccessLevel(10);
         addMemberRequest.setSessionStatus(false);
-        AddMemberResponse response = memberService.registerMember(addMemberRequest);
-        assertEquals("Registration successful", response.getRegMsg());
+        AddMemberResponse response1 = memberService.registerMember(addMemberRequest);
+        assertEquals("Registration successful", response1.getRegMsg());
 
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("twinebravo@gmail.com");
@@ -429,7 +432,7 @@ public class MemberServiceImplTest {
         logoutRequest.setEmail("twinebravo@gmail.com");
         logoutRequest.setSessionStatus(false);
 
-        LogoutResponse getResponse = memberService.logoutMember(request);
+        LogoutResponse getResponse = memberService.logoutMember(request, response);
         assertEquals("twinebravo@gmail.com", getResponse.getEmail());
         assertEquals("Logged out successfully", getResponse.getLogoutMsg());
         verify(session).invalidate();

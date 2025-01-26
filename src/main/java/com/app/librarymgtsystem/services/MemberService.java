@@ -7,6 +7,7 @@ import com.app.librarymgtsystem.dtos.responses.AddMemberResponse;
 import com.app.librarymgtsystem.dtos.responses.LoginResponse;
 import com.app.librarymgtsystem.dtos.responses.LogoutResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -36,6 +37,7 @@ public interface MemberService {
 
     Member loginMember(LoginRequest loginRequest, HttpServletRequest request);
 
-    LogoutResponse logoutMember(HttpServletRequest request);
+    LogoutResponse logoutMember(HttpServletRequest request,  HttpServletResponse response);
 
 }
+

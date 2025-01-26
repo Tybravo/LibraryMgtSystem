@@ -10,6 +10,7 @@ import com.app.librarymgtsystem.exceptions.*;
 import com.app.librarymgtsystem.services.MemberService;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -97,7 +98,7 @@ public class MemberController {
 
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logoutMember(HttpServletRequest request) {
+    public ResponseEntity<?> logoutMember(HttpServletRequest request, HttpServletResponse response) {
         try {
             HttpSession session = request.getSession(false);
             if (session == null || session.getAttribute("userEmail") == null) {
@@ -105,7 +106,7 @@ public class MemberController {
             }
             LogoutRequest logoutRequest = new LogoutRequest();
             logoutRequest.setEmail((String) session.getAttribute("userEmail"));
-            memberService.logoutMember(request);
+            memberService.logoutMember(request, response);
             return ResponseEntity.ok("Logout successful!");
         } catch (LogoutMemberException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
