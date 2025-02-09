@@ -115,6 +115,20 @@ public class MemberController {
         }
     }
 
+
+    @PatchMapping("/session-timeout")
+    public ResponseEntity<String> sessionTimeout(HttpServletRequest request) {
+        try {
+            memberService.handleSessionTimeout(request);
+            return ResponseEntity.ok("Session timed out, sessionStatus updated.");
+        } catch (LogoutMemberException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("An error occurred while handling session timeout.");
+        }
+    }
+
+
     @GetMapping("/search")
     public ResponseEntity<?> searchMember(@RequestParam String email) {
         try {

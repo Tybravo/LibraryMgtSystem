@@ -39,5 +39,7 @@ public interface MemberService {
 
     LogoutResponse logoutMember(HttpServletRequest request,  HttpServletResponse response);
 
+    void handleSessionTimeout(HttpServletRequest request);
+
 }
 
