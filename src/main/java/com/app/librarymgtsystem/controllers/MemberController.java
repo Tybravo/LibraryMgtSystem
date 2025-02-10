@@ -116,7 +116,7 @@ public class MemberController {
     }
 
 
-    @PatchMapping("/session-timeout")
+    @PostMapping("/session-timeout")
     public ResponseEntity<String> sessionTimeout(HttpServletRequest request) {
         try {
             memberService.handleSessionTimeout(request);

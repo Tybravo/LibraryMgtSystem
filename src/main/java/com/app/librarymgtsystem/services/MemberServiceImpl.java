@@ -4,9 +4,11 @@ import com.app.librarymgtsystem.data.models.Member;
 import com.app.librarymgtsystem.data.repositories.MemberRepository;
 import com.app.librarymgtsystem.dtos.requests.AddMemberRequest;
 import com.app.librarymgtsystem.dtos.requests.LoginRequest;
+import com.app.librarymgtsystem.dtos.requests.SessionTimeoutRequest;
 import com.app.librarymgtsystem.dtos.responses.AddMemberResponse;
 import com.app.librarymgtsystem.dtos.responses.LoginResponse;
 import com.app.librarymgtsystem.dtos.responses.LogoutResponse;
+import com.app.librarymgtsystem.dtos.responses.SessionTimeoutResponse;
 import com.app.librarymgtsystem.exceptions.*;
 import com.app.librarymgtsystem.security.LoggedInUserContext;
 import jakarta.servlet.http.HttpServletRequest;
@@ -272,7 +274,7 @@ public class MemberServiceImpl implements MemberService {
 
 
     @Override
-    public void handleSessionTimeout(HttpServletRequest request) {
+    public SessionTimeoutResponse handleSessionTimeout(HttpServletRequest request) {
             HttpSession session = request.getSession(false);
             // Check if session exists
             if (session == null || session.getAttribute("userEmail") == null) {
@@ -291,8 +293,13 @@ public class MemberServiceImpl implements MemberService {
             // Update sessionStatus to false
             foundMember.setSessionStatus(false);
             memberRepository.save(foundMember); // Save the update in the database
+
+            SessionTimeoutResponse sessionTimeoutResponse = new SessionTimeoutResponse();
+            sessionTimeoutResponse.setSessionTimeoutMsg("Session timed out");
+
             // Invalidate the session
             session.invalidate();
+            return sessionTimeoutResponse;
     }
 
 
