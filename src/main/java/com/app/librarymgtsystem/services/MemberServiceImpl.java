@@ -4,7 +4,6 @@ import com.app.librarymgtsystem.data.models.Member;
 import com.app.librarymgtsystem.data.repositories.MemberRepository;
 import com.app.librarymgtsystem.dtos.requests.AddMemberRequest;
 import com.app.librarymgtsystem.dtos.requests.LoginRequest;
-import com.app.librarymgtsystem.dtos.requests.SessionTimeoutRequest;
 import com.app.librarymgtsystem.dtos.responses.AddMemberResponse;
 import com.app.librarymgtsystem.dtos.responses.LoginResponse;
 import com.app.librarymgtsystem.dtos.responses.LogoutResponse;
@@ -17,9 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -173,7 +170,7 @@ public class MemberServiceImpl implements MemberService {
         LoggedInUserContext.setSessionEmail(foundMemberPassword.getEmail());
 
         HttpSession session = request.getSession(true);
-        session.setMaxInactiveInterval(2 * 60); // Set session timeout (30 minutes)
+        session.setMaxInactiveInterval(10 * 60); // Set session timeout (30 minutes)
         session.setAttribute("userEmail", foundMemberPassword.getEmail());
         String sessionEmail = (String) session.getAttribute("userEmail");
 
@@ -274,8 +271,8 @@ public class MemberServiceImpl implements MemberService {
 
 
     @Override
-    public SessionTimeoutResponse handleSessionTimeout(HttpServletRequest request) {
-            HttpSession session = request.getSession(false);
+    public void handleSessionTimeout(HttpServletRequest request) {
+            HttpSession session = request.getSession(true);
             // Check if session exists
             if (session == null || session.getAttribute("userEmail") == null) {
                 throw new LogoutMemberException("No active session found for the user");
@@ -299,7 +296,6 @@ public class MemberServiceImpl implements MemberService {
 
             // Invalidate the session
             session.invalidate();
-            return sessionTimeoutResponse;
     }
 
 

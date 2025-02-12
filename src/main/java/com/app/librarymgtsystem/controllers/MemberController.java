@@ -116,9 +116,13 @@ public class MemberController {
     }
 
 
-    @PostMapping("/session-timeout")
+    @PatchMapping("/session-timeout")
     public ResponseEntity<String> sessionTimeout(HttpServletRequest request) {
         try {
+            HttpSession session = request.getSession(false);
+            if (session == null || session.getAttribute("userEmail") == null) {
+                return ResponseEntity.badRequest().body("No active session found for the user.");
+            }
             memberService.handleSessionTimeout(request);
             return ResponseEntity.ok("Session timed out, sessionStatus updated.");
         } catch (LogoutMemberException e) {
