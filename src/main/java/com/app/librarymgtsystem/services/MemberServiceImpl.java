@@ -170,7 +170,7 @@ public class MemberServiceImpl implements MemberService {
         LoggedInUserContext.setSessionEmail(foundMemberPassword.getEmail());
 
         HttpSession session = request.getSession(true);
-        session.setMaxInactiveInterval(10 * 60); // Set session timeout (30 minutes)
+        session.setMaxInactiveInterval(2 * 60); // Set session timeout (30 minutes)
         session.setAttribute("userEmail", foundMemberPassword.getEmail());
         String sessionEmail = (String) session.getAttribute("userEmail");
 
@@ -272,7 +272,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public void handleSessionTimeout(HttpServletRequest request) {
-            HttpSession session = request.getSession(true);
+            HttpSession session = request.getSession(false);
             // Check if session exists
             if (session == null || session.getAttribute("userEmail") == null) {
                 throw new LogoutMemberException("No active session found for the user");
