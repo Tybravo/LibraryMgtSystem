@@ -170,7 +170,7 @@ public class MemberServiceImpl implements MemberService {
         LoggedInUserContext.setSessionEmail(foundMemberPassword.getEmail());
 
         HttpSession session = request.getSession(true);
-        session.setMaxInactiveInterval(2 * 60); // Set session timeout (30 minutes)
+        session.setMaxInactiveInterval(6 * 60); // Set session timeout (6 minutes)
         session.setAttribute("userEmail", foundMemberPassword.getEmail());
         String sessionEmail = (String) session.getAttribute("userEmail");
 
@@ -219,7 +219,7 @@ public class MemberServiceImpl implements MemberService {
         foundMember.setSessionEmail(foundMember.getEmail());
 
         HttpSession session = request.getSession(true);
-        session.setMaxInactiveInterval(30 * 60); // Set session timeout (30 minutes)
+        session.setMaxInactiveInterval(6 * 60); // Set session timeout (6 minutes)
         session.setAttribute("userEmail", foundMember.getEmail());
 
         memberRepository.save(foundMember);
