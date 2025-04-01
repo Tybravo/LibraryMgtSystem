@@ -240,9 +240,6 @@ public class MemberServiceImpl implements MemberService {
             if (foundMember == null) {
                 throw new LogoutMemberException("Member does not exist");
             }
-            if (!foundMember.isSessionStatus()) {
-                throw new LogoutMemberException("You are currently out of session");
-            }
             // Update session status and persist changes
             foundMember.setSessionStatus(false);
             memberRepository.save(foundMember);
@@ -268,7 +265,6 @@ public class MemberServiceImpl implements MemberService {
             LoggedInUserContext.clear();
         }
     }
-
 
     @Override
     public void handleSessionTimeout(HttpServletRequest request) {
@@ -296,6 +292,19 @@ public class MemberServiceImpl implements MemberService {
 
             // Invalidate the session
             session.invalidate();
+    }
+
+    @Override
+    public boolean updateSessionStatus(String email) {
+        Optional<Member> optionalMember = memberRepository.findByEmail(email);
+
+        if (optionalMember.isPresent()) {
+            Member member = optionalMember.get();
+            member.setSessionStatus(false); // Set session status to false
+            memberRepository.save(member);
+            return true;
+        }
+        return false;
     }
 
 

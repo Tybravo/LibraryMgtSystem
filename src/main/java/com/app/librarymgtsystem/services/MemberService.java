@@ -41,5 +41,7 @@ public interface MemberService {
 
     void handleSessionTimeout(HttpServletRequest request);
 
+    boolean updateSessionStatus(String email);
+
 }
 
